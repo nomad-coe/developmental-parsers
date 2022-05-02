@@ -1,0 +1,8 @@
+codeLabel: ALF
+codeLabelStyle: All in capitals
+codeName: alf
+parserDirName: dependencies/parsers/developmental/developmentalparsers/alf/
+parserGitUrl: https://github.com/nomad-coe/developmental-parsers.git
+parserSpecific: ''
+preamble: ''
+tableOfFiles: ''
