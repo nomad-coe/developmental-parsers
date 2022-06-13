@@ -1,0 +1,41 @@
+[General]
+  DOS = ReadIn
+  HkFile = ../w2d_Hk_SrVO3.dat
+  beta = 10
+  NAt = 1
+  totdens = 3.0
+  magnetism = para
+  EPSN = 0.000001
+  DMFTsteps = 10
+  FileNamePrefix = SrVO3_beta10
+  fileold = SrVO3_beta10-*.dat
+  readold = 0
+  mixing = 0.1
+  mixing_strategy = modbroyden
+  mixing_diis_period = 1
+  mixing_diis_history = 1
+  mu_search = mixer
+  FTType = none
+[Atoms]
+[[1]]
+  Hamiltonian = Kanamori
+  QuantumNumbers = Nt Szt Qzt
+  Udd = 4.0
+  Jdd = 0.6
+  Vdd = 2.8
+  Nd = 3
+  Np = 0
+[QMC]
+  Nwarmups = 1000000
+  Nmeas = 20000
+  NCorr = 500
+  Niw = 1000
+  Nftau = 1000
+  Ntau = 1000 
+# statesampling = 1
+  offdiag = 0
+# TaudiffMax = -1 
+  MeasGiw = 1
+  NLegMax = 1 
+  NLegOrder = 1
+  NLookup_nfft = 500000

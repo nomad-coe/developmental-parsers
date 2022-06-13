@@ -1,0 +1,204 @@
+
+           ______
+         _/XXXXXX\ ___ __  ____   /|   W2DYNAMICS - Wuerzburg/Wien strong
+  |\    | |X/  \X| __ \\ \/ /  \ | |                coupling impurity solver
+  \ \ |\| |____/X| | \ \\  /| \ \| |
+   \ \\ \ /XXXXXX| |_/ // / | |\ \ |   Authors: M Wallerberger, A Hausoel,
+    \__\__|X/____|____//_/  |_| \__|   P Gunacker, A Kowalski, N Parragh, F Goth,
+         |XXXXXXXX|                              K Held, G Sangiovanni
+                                       Version 1.1.1, February 2021
+
+One-shot CT-HYB calculation
+Running on 144 cores
+Calculation started Fri Feb 18 09:49:21 2022
+Writing basic data for the run ...
+Reading configuration ...
+Generating atom ...
+Initialising solver ...
+Generating impurity problem ...
+Writing impurity problem ...
+Solving impurity problem ...
+ --> Using diagonal F(tau).
+ --> fast offdiag.
+ --> Using Matrix solver.
+ --> Using Matrix solver.
+ --> Using Matrix solver.
+ --> Using eigenbasis of impurity.
+ --> Using diagonal F(tau).
+ --> fast offdiag.
+ --> Using Matrix solver.
+ --> Using eigenbasis of impurity.
+ --> Using Matrix solver.
+ --> Using eigenbasis of impurity.
+ --> Using diagonal F(tau).
+ --> fast offdiag.
+ --> Using Matrix solver.
+ --> Using eigenbasis of impurity.
+ --> Using Matrix solver.
+ --> Using eigenbasis of impurity.
+ --> Using Matrix solver.
+ --> Using eigenbasis of impurity.
+ --> Using diagonal F(tau).
+ --> fast offdiag.
+ --> Using Matrix solver.
+ Rank    0 starting window calibration phase 1
+ Rank   16 starting window calibration phase 1
+ Rank   24 starting window calibration phase 1
+ Rank   40 starting window calibration phase 1
+ Rank   96 starting window calibration phase 1
+ Rank  104 starting window calibration phase 1
+ Rank   73 starting window calibration phase 1
+ Rank  121 starting window calibration phase 1
+ Rank  126:                100000 steps
+ Rank  113:                100000 steps
+ Rank  131:                100000 steps
+ Rank   73:                100000 steps
+ Rank  106:                100000 steps
+ Rank    4:                100000 steps
+ Rank    0:                100000 steps
+ Rank   40:                100000 steps
+ Rank  110:                100000 steps
+ Rank   16:                100000 steps
+ Rank   13 window calibration phase 1 complete
+ Rank  130:                100000 steps
+ Rank  107:                100000 steps
+ Rank   24:                100000 steps
+ Rank   54:                100000 steps
+ Rank   70:                100000 steps
+ Rank    3:                100000 steps
+ Rank  138 window calibration phase 1 complete
+ Rank   85 window calibration phase 1 complete
+ Rank   88 window calibration phase 1 complete
+ Rank   42:                100000 steps
+ Rank  127:                100000 steps
+t_max =    1.5,  66 window(s), NWin =   33.5, t_win =    3.0
+ Rank   64 starting window calibration phase 2
+t_max =    1.5,  66 window(s), NWin =   33.5, t_win =    3.0
+ Rank   65 starting window calibration phase 2
+t_max =    1.5,  66 window(s), NWin =   33.5, t_win =    3.0
+ Rank   66 starting window calibration phase 2
+t_max =    1.5,  66 window(s), NWin =   33.5, t_win =    3.0
+ Rank   67 starting window calibration phase 2
+t_max =    1.5,  66 window(s), NWin =   33.5, t_win =    3.0
+ Rank   68 starting window calibration phase 2
+t_max =    1.5,  66 window(s), NWin =   33.5, t_win =    3.0
+ Rank   69 starting window calibration phase 2
+t_max =    1.5,  66 window(s), NWin =   33.5, t_win =    3.0
+ Rank   70 starting window calibration phase 2
+t_max =    1.5,  66 window(s), NWin =   33.5, t_win =    3.0
+ Rank   71 starting window calibration phase 2
+ Rank   27 window calibration phase 2 complete
+ Rank   19 window calibration phase 2 complete
+ Rank  121 window calibration phase 2 complete
+ Rank  126 window calibration phase 2 complete
+ Rank  139 window calibration phase 2 complete
+t_max =    2.0,  49 window(s), NWin =   25.0, t_win =    4.0
+t_max =    2.0,  49 window(s), NWin =   25.0, t_win =    4.0
+t_max =    2.0,  49 window(s), NWin =   25.0, t_win =    4.0
+t_max =    2.0,  49 window(s), NWin =   25.0, t_win =    4.0
+t_max =    2.0,  49 window(s), NWin =   25.0, t_win =    4.0
+t_max =    2.0,  49 window(s), NWin =   25.0, t_win =    4.0
+t_max =    2.0,  49 window(s), NWin =   25.0, t_win =    4.0
+Warmup  137:    starting:   200000000 ticks
+Warmup  138:    starting:   200000000 ticks
+Warmup  141:    starting:   200000000 ticks
+Warmup   51:    starting:   200000000 ticks
+Warmup  120:    complete:   200000000 ticks in 19m06s                            
+Warmup   92:    complete:   200000000 ticks in 19m06s                            
+Warmup   66:    complete:   200000000 ticks in 19m08s                            
+Warmup   26:      194528332 of   200000000 ( 97.3%) 19m09s  T-32.32s
+Warmup   90:      194757726 of   200000000 ( 97.4%) 19m09s  T-30.94s
+Warmup   77:      197116739 of   200000000 ( 98.6%) 19m09s  T-16.81s
+Warmup  125:      194019786 of   200000000 ( 97.0%) 19m09s  T-35.43s
+Warmup   22:    complete:   200000000 ticks in 19m09s                            
+Warmup   46:    complete:   200000000 ticks in 19m09s                            
+Warmup    5:      197783578 of   200000000 ( 98.9%) 19m10s  T-12.89s
+Warmup   53:      194967422 of   200000000 ( 97.5%) 19m10s  T-29.70s
+Warmup   95:      199780931 of   200000000 ( 99.9%) 19m11s  T- 1.26s
+Warmup   99:      199734867 of   200000000 ( 99.9%) 19m11s  T- 1.53s
+Warmup   54:      195504811 of   200000000 ( 97.8%) 19m11s  T-26.47s
+Warmup   42:      195454908 of   200000000 ( 97.7%) 19m11s  T-26.78s
+Warmup   61:      195318343 of   200000000 ( 97.7%) 19m11s  T-27.61s
+Warmup  112:      196641222 of   200000000 ( 98.3%) 19m12s  T-19.68s
+Warmup   95:    complete:   200000000 ticks in 19m12s                            
+Warmup   75:      194487324 of   200000000 ( 97.2%) 19m12s  T-32.66s
+Warmup  132:      197919274 of   200000000 ( 99.0%) 19m11s  T-12.11s
+Warmup  143:      194474582 of   200000000 ( 97.2%) 19m12s  T-32.75s
+Warmup  128:      195312048 of   200000000 ( 97.7%) 19m12s  T-27.66s
+Warmup   99:    complete:   200000000 ticks in 19m12s                            
+Warmup   84:      196936364 of   200000000 ( 98.5%) 19m12s  T-17.93s
+Warmup   35:    complete:   200000000 ticks in 19m12s                            
+Warmup  135:      196205173 of   200000000 ( 98.1%) 19m12s  T-22.30s
+Warmup  104:      194031312 of   200000000 ( 97.0%) 19m12s  T-35.47s
+Warmup  113:    complete:   200000000 ticks in 19m13s                            
+Warmup  124:      199887542 of   200000000 ( 99.9%) 19m12s  T- 0.65s
+Warmup   30:      197116824 of   200000000 ( 98.6%) 19m13s  T-16.88s
+Warmup   19:      195695470 of   200000000 ( 97.8%) 19m13s  T-25.38s
+Simulation    2 starting:     2500000 ticks
+Simulation   15 starting:     2500000 ticks
+Simulation   32 starting:     2500000 ticks
+Simulation   35 starting:     2500000 ticks
+Simulation   39 starting:     2500000 ticks
+Simulation   46 starting:     2500000 ticks
+Simulation   47 starting:     2500000 ticks
+Simulation   54 starting:     2500000 ticks
+Simulation   62 starting:     2500000 ticks
+Simulation   66 starting:     2500000 ticks
+Simulation   68 starting:     2500000 ticks
+Simulation   93 complete:     2500000 ticks in 10h24m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Simulation   54     2428995 of     2500000 ( 97.2%) 10h24m  T-18m15s
+Simulation  105     2392673 of     2500000 ( 95.7%) 10h24m  T-28m00s
+Simulation   51     2427846 of     2500000 ( 97.1%) 10h23m  T-18m32s
+Simulation   80     2437837 of     2500000 ( 97.5%) 10h24m  T-15m55s
+Simulation  102     2488915 of     2500000 ( 99.6%) 10h45m  T- 2m52s
+Simulation   55 complete:     2500000 ticks in 10h46m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Simulation  105     2481285 of     2500000 ( 99.3%) 10h46m  T- 4m52s
+Simulation   63     2489727 of     2500000 ( 99.6%) 10h46m  T- 2m39s
+Done post-processing, CTQMC   45complete.
+Simulation   82     2490755 of     2500000 ( 99.6%) 10h46m  T- 2m23s
+Simulation    4 complete:     2500000 ticks in 10h46m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Simulation  102     2493028 of     2500000 ( 99.7%) 10h46m  T- 1m48s
+Simulation  139     2489624 of     2500000 ( 99.6%) 10h46m  T- 2m41s
+Simulation   12     2499557 of     2500000 (100.0%) 10h46m  T- 6.88s
+Done post-processing, CTQMC   55complete.
+Simulation   12 complete:     2500000 ticks in 10h46m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Simulation   63     2493668 of     2500000 ( 99.7%) 10h46m  T- 1m38s
+Simulation  105     2487303 of     2500000 ( 99.5%) 10h47m  T- 3m18s
+Simulation   82     2496845 of     2500000 ( 99.9%) 10h47m  T-49.05s
+Done post-processing, CTQMC    4complete.
+Simulation  102     2498757 of     2500000 (100.0%) 10h47m  T-19.32s
+Done post-processing, CTQMC   12complete.
+Simulation  139     2495735 of     2500000 ( 99.8%) 10h47m  T- 1m06s
+Simulation   82 complete:     2500000 ticks in 10h47m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Simulation  102 complete:     2500000 ticks in 10h47m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Simulation   63     2497885 of     2500000 ( 99.9%) 10h47m  T-32.90s
+Simulation   63 complete:     2500000 ticks in 10h47m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Simulation  105     2493291 of     2500000 ( 99.7%) 10h48m  T- 1m44s
+Done post-processing, CTQMC  102complete.
+Done post-processing, CTQMC   82complete.
+Simulation  139 complete:     2500000 ticks in 10h48m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Done post-processing, CTQMC   63complete.
+Done post-processing, CTQMC  139complete.
+Simulation  105     2499229 of     2500000 (100.0%) 10h49m  T-12.02s
+Simulation  105 complete:     2500000 ticks in 10h49m                            
+ Z Mean Sign  -1.0000000000000000     
+ Steps in Z           5000000000
+Done post-processing, CTQMC  105complete.
+Time of iteration no. 1: 40198.9 sec
+Finished calculation.
