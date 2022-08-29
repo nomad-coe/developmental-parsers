@@ -26,8 +26,8 @@ from nomad.datamodel.metainfo.simulation.run import Run
 from nomad.datamodel.metainfo.simulation.calculation import Calculation
 from nomad.datamodel.metainfo.simulation.method import Method
 from .metainfo.w2dynamics import (
-    x_w2dynamics_quantities, x_w2dynamics_axes, x_w2dynamics_input_parameters,
-    x_w2dynamics_atom
+    x_w2dynamics_quantities, x_w2dynamics_axes, x_w2dynamics_input_parameters, 
+    x_w2dynamics_atom_parameters
 )
 
 re_n = r'[\n\r]'
@@ -38,20 +38,20 @@ class ParameterParser(TextParser):
         section_quantities = [
             Quantity(
                 'parameter', f'{re_n} *(\w+ *= *.+)',
-                repeats=True, str_operation=lambda x: x.split('=', 1))
+                repeats=True, str_operation=lambda x: x.split(' = ', 1))
         ]
 
         self._quantities = [
             Quantity(
-                'general', r'(General\][\s\S]+?)(\?:\[|\Z)',
+                'general', r'(General\][\s\S]+?)(\]|\Z)',
                 sub_parser=TextParser(quantities=section_quantities)
             ),
             Quantity(
-                'atom', rf'(\[\d+\]\][\s\S]+?)(\?:\[|\Z)', repeats=True,
+                'atom', r'(\[\d+\]\][\s\S]+?)(\[|\Z)', repeats=True,
                 sub_parser=TextParser(quantities=section_quantities)
             ),
             Quantity(
-                'qmc', r'(QMC\][\s\S]+?)(\?:\[|\Z)',
+                'qmc', r'(QMC\][\s\S]+?)(\]|\Z)',
                 sub_parser=TextParser(quantities=section_quantities)
             )
         ]
@@ -139,5 +139,5 @@ class W2DynamicsParser:
             for atom in self.parameter_parser.get('atom', []):
                 parameters = {key: val for key, val in atom.get('parameter', [])}
                 if parameters:
-                    sec_atom = sec_method.m_create(x_w2dynamics_atom)
-                    sec_atom.x_w2dynamics_atom_parameters = parameters
+                    sec_atom = sec_method.m_create(x_w2dynamics_atom_parameters)
+                    sec_atom.x_w2dynamics_atom = parameters
