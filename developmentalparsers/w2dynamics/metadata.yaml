@@ -1,0 +1,19 @@
+codeLabel: w2dynamics
+codeLabelStyle: All in lowercase
+codeName: w2dynamics
+codeUrl: https://github.com/w2dynamics/w2dynamics
+parserDirName: dependencies/parsers/developmental/developmentalparsers/w2dynamics/
+parserGitUrl: https://github.com/nomad-coe/developmental-parsers.git
+parserSpecific: ''
+preamble: ''
+tableOfFiles: |
+  | Input Filename  | Description |
+  | --- | --- |
+  | `<hdf5_file>` | (output) mainfile  |
+  | `w2d.log`  | (output) error |
+  | `Parameters.in` | (input, DFT+DMFT) general, atoms, and QMC parameters  |
+  | `w2params.in` | (input, model+DMFT) general, atoms, and QMC parameters  |
+  | `w2d_Hk.dat`  | (input, DFT+DMFT) orbital-resolved bands |
+  | `w2dlevels.dat`  | (input, model+DMFT) local energy levels |
+  | `epsk`  | (input, model+DMFT) discrete bath levels |
+  | `Vk`  | (input, model+DMFT) hybridizations |
