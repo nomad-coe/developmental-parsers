@@ -26,7 +26,8 @@ from nomad.datamodel.metainfo.simulation.run import Run
 from nomad.datamodel.metainfo.simulation.calculation import Calculation
 from nomad.datamodel.metainfo.simulation.method import Method
 from .metainfo.w2dynamics import (
-    x_w2dynamics_quantities, x_w2dynamics_axes, x_w2dynamics_input_parameters
+    x_w2dynamics_quantities, x_w2dynamics_axes, x_w2dynamics_input_parameters,
+    x_w2dynamics_atom
 )
 
 re_n = r'[\n\r]'
@@ -127,7 +128,7 @@ class W2DynamicsParser:
             self.parameter_parser.mainfile = os.path.join(self.maindir, in_files[0])
 
             sec_input_parameters = x_w2dynamics_input_parameters()
-            for key in ['general', 'atoms', 'qmc']:
+            for key in ['general', 'qmc']:
                 parameters = {key: val for key, val in self.parameter_parser.get(key, {}).get('parameter', [])}
                 if parameters:
                     setattr(sec_input_parameters, f'x_w2dynamics_{key}', parameters)
@@ -135,8 +136,8 @@ class W2DynamicsParser:
             sec_method = sec_run.m_create(Method)
             sec_method.x_w2dynamics_input_parameters = sec_input_parameters
 
-            #for atom in self.parameter_parser.get('atom', []):
-                #parameters = {key: val for key, val in atom.get('parameter', [])}
-                #if parameters:
-                    #sec_atom = sec_method.m_create(x_w2dynamics_atom)
-                    #sec_atom.x_w2dynamics_atom_parameters = parameters
+            for atom in self.parameter_parser.get('atom', []):
+                parameters = {key: val for key, val in atom.get('parameter', [])}
+                if parameters:
+                    sec_atom = sec_method.m_create(x_w2dynamics_atom)
+                    sec_atom.x_w2dynamics_atom_parameters = parameters

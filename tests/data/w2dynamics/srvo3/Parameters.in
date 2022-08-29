@@ -17,7 +17,6 @@
   mu_search = mixer
   FTType = none
 [Atoms]
-[[1]]
   Hamiltonian = Kanamori
   QuantumNumbers = Nt Szt Qzt
   Udd = 4.0
