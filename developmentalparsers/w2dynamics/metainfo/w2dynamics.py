@@ -295,16 +295,16 @@ class x_w2dynamics_quantities(MSection):
         type=np.dtype(np.float64),
         description='''
         Two-particle Green's function in particle-hole Matsubara frequencies from worm sampling
-There are two conventions:
-0: (v+w) tau_1 - v tau_2 + v' tau_3 - (v'+w) tau_4
-1: v tau_1 - (v-w) tau_2 + (v'-w) tau_3 - v' tau_4
+        There are two conventions:
+            0: (v+w) tau_1 - v tau_2 + v' tau_3 - (v'+w) tau_4
+            1: v tau_1 - (v-w) tau_2 + (v'-w) tau_3 - v' tau_4
         ''')
 
     x_w2dynamics_g4iwpp_worm = Quantity(
         type=np.dtype(np.float64),
         description='''
         Two-particle Green's function in particle-particle Matsubara frequencies from worm sampling
-Convention: v tau_1 - (w-v') tau_2 + (w-v) tau_3 - v' tau_4
+        Convention: v tau_1 - (w-v') tau_2 + (w-v) tau_3 - v' tau_4
         ''')
 
     x_w2dynamics_g4leg = Quantity(
@@ -853,14 +853,14 @@ class Run(simulation.run.Run):
     # TODO add config, environment variables
 
 
-class x_w2dynamics_atom(MSection):
-
-    m_def = Section(validate=False)
-
-    x_w2dynamics_atom_parameters = Quantity(
-        type=JSON,
-        description='''
-        ''')
+#class x_w2dynamics_atom(MSection):
+#
+#    m_def = Section(validate=False)
+#
+#    x_w2dynamics_atom_parameters = Quantity(
+#        type=JSON,
+#        description='''
+#        ''')
 
 
 class x_w2dynamics_input_parameters(MSection):
@@ -869,13 +869,18 @@ class x_w2dynamics_input_parameters(MSection):
 
     x_w2dynamics_general = Quantity(
         type=JSON,
-        description='''
-        ''')
+        description=''''''
+    )
+
+    x_w2dynamics_atoms = Quantity(
+        type=JSON,
+        description=''''''
+    )
 
     x_w2dynamics_qmc = Quantity(
         type=JSON,
-        description='''
-        ''')
+        description=''''''
+    )
 
 
 class Method(simulation.method.Method):
@@ -884,7 +889,7 @@ class Method(simulation.method.Method):
 
     x_w2dynamics_input_parameters = SubSection(sub_section=x_w2dynamics_input_parameters.m_def, repeats=False)
 
-    x_w2dynamics_atom = SubSection(sub_section=x_w2dynamics_atom.m_def, repeats=True)
+    #x_w2dynamics_atom = SubSection(sub_section=x_w2dynamics_atom.m_def, repeats=True)
 
 
 class Calculation(simulation.calculation.Calculation):
