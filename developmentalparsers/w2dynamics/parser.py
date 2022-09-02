@@ -22,7 +22,7 @@ import h5py
 import re
 
 from nomad.parsing.file_parser import TextParser, Quantity
-from nomad.datamodel.metainfo.simulation.run import Run
+from nomad.datamodel.metainfo.simulation.run import Run, Program
 from nomad.datamodel.metainfo.simulation.calculation import Calculation
 from nomad.datamodel.metainfo.simulation.method import Method
 from .metainfo.w2dynamics import (
@@ -37,6 +37,7 @@ class ParameterParser(TextParser):
     def init_quantities(self):
         section_quantities = [
             Quantity(
+                #'parameter', f'{re_n} *((\w|-)+ *= *.+)',
                 'parameter', f'{re_n} *(\w+ *= *.+)',
                 repeats=True, str_operation=lambda x: x.split(' = ', 1))
         ]
@@ -57,10 +58,24 @@ class ParameterParser(TextParser):
         ]
 
 
+class InfoParser(TextParser):
+    def __init__(self):
+        super().__init__(None)
+    
+    def init_quantities(self):
+        self._quantities = [
+            Quantity(
+                'program_version', r'Version\s*([0-9.]+)',
+                dtype=str, flatten=False
+            )
+        ]
+
+
 class W2DynamicsParser:
     def __init__(self):
         self._re_namesafe = re.compile(r'[^\w]')
         self.parameter_parser = ParameterParser()
+        self.info_parser = InfoParser()
 
     def parse(self, filepath, archive, logger):
         self.filepath = os.path.abspath(filepath)
@@ -118,8 +133,8 @@ class W2DynamicsParser:
             sec_axes = sec_run.m_create(x_w2dynamics_axes)
             parse_quantities(data['.axes'], sec_axes)
 
-        # read parameters from parameter file
-        # TODO determine if parameters can be read from hdf5 file
+        # TODO determine if parameters/program version can be read from hdf5 file
+        # read parameters from parameter file if present
         in_files = [f for f in os.listdir(self.maindir) if f.endswith('.in')]
         if in_files:
             if len(in_files) > 1:
@@ -141,3 +156,17 @@ class W2DynamicsParser:
                 if parameters:
                     sec_atom = sec_method.m_create(x_w2dynamics_atom_parameters)
                     sec_atom.x_w2dynamics_atom = parameters
+
+        sec_program = sec_run.m_create(Program)
+        sec_program.name = 'w2dynamics'
+        # read program version from .log file if present
+        log_files = [f for f in os.listdir(self.maindir) if f.endswith('.log')]
+        if log_files:
+            if len(log_files) > 1:
+                self.logger.warn('Multiple logging files found.')
+            
+            self.info_parser.mainfile = os.path.join(self.maindir, log_files[0])
+
+            version = self.info_parser.get('program_version', [])
+            if version:
+                sec_program.version = version
