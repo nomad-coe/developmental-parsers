@@ -20,7 +20,7 @@ import numpy as np
 
 from nomad.metainfo import (  # pylint: disable=unused-import
     MSection, MCategory, Category, Package, Quantity, Section, SubSection, SectionProxy,
-    Reference, JSON
+    Reference, MEnum, JSON
 )
 from nomad.datamodel.metainfo import simulation
 
@@ -295,16 +295,16 @@ class x_w2dynamics_quantities(MSection):
         type=np.dtype(np.float64),
         description='''
         Two-particle Green's function in particle-hole Matsubara frequencies from worm sampling
-There are two conventions:
-0: (v+w) tau_1 - v tau_2 + v' tau_3 - (v'+w) tau_4
-1: v tau_1 - (v-w) tau_2 + (v'-w) tau_3 - v' tau_4
+        There are two conventions:
+        0: (v+w) tau_1 - v tau_2 + v' tau_3 - (v'+w) tau_4
+        1: v tau_1 - (v-w) tau_2 + (v'-w) tau_3 - v' tau_4
         ''')
 
     x_w2dynamics_g4iwpp_worm = Quantity(
         type=np.dtype(np.float64),
         description='''
         Two-particle Green's function in particle-particle Matsubara frequencies from worm sampling
-Convention: v tau_1 - (w-v') tau_2 + (w-v) tau_3 - v' tau_4
+        Convention: v tau_1 - (w-v') tau_2 + (w-v) tau_3 - v' tau_4
         ''')
 
     x_w2dynamics_g4leg = Quantity(
@@ -842,22 +842,11 @@ Convention: v tau_1 - (w-v') tau_2 + (w-v) tau_3 - v' tau_4
         ''')
 
 
-class Run(simulation.run.Run):
-
-    m_def = Section(validate=False, extends_base_section=True)
-
-    x_w2dynamics_axes = SubSection(sub_section=x_w2dynamics_axes.m_def, repeats=False)
-
-    x_w2dynamics_quantities = SubSection(sub_section=x_w2dynamics_quantities.m_def, repeats=True)
-
-    # TODO add config, environment variables
-
-
-class x_w2dynamics_atom(MSection):
+class x_w2dynamics_atom_parameters(MSection):
 
     m_def = Section(validate=False)
 
-    x_w2dynamics_atom_parameters = Quantity(
+    x_w2dynamics_atom = Quantity(
         type=JSON,
         description='''
         ''')
@@ -878,16 +867,194 @@ class x_w2dynamics_input_parameters(MSection):
         ''')
 
 
-class Method(simulation.method.Method):
+class System(simulation.system.System):
+    '''
+    Contains parameters describing a system of atomic configuration. These inclue the
+    compound name, atomic positions, lattice vectors, contraints on the atoms, etc.
+    '''
 
     m_def = Section(validate=False, extends_base_section=True)
 
+    # TODO extend this quantity
+    dos = Quantity(
+        type = str,
+        shape = [],
+        description = '''
+        DOS choice
+        ''')
+
+
+class DMFT(MSection):
+    '''
+    Section containing the various parameters that define a DMFT calculation
+    '''
+
+    m_def = Section(validate=False)
+
     x_w2dynamics_input_parameters = SubSection(sub_section=x_w2dynamics_input_parameters.m_def, repeats=False)
 
-    x_w2dynamics_atom = SubSection(sub_section=x_w2dynamics_atom.m_def, repeats=True)
+    x_w2dynamics_atom_parameters = SubSection(sub_section=x_w2dynamics_atom_parameters.m_def, repeats=True)
+
+    local_hamiltonian = Quantity(
+        type = MEnum(["Density", "Kanamori", "Coulomb", "ReadUmatrix", "ReadNormalUmatrix"]),
+        shape = [],
+        description = '''
+        Form of the local Coulomb interacting Hamiltonian:
+
+        | Name                  | Description                               |
+        | --------------------- | ----------------------------------------- |
+        | `"Density"`           | Density-density interaction               |
+        | `"Kanamori"`          | Slater-Kanamori interaction               |
+        | `"Coulomb"`           | Slater integrals F0, F2, F4, F6 specified |
+        | `"ReadUmatrix"`       | Read umatrix file (spin-dependent)        |
+        | `"ReadNormalUmatrix"` | Read umatrix file (spin-independent)      |
+        ''')
+
+    number_of_atoms_per_unit_cell = Quantity(
+        type = int,
+        shape = [],
+        description = '''
+        Number of atoms per unit cell
+        ''')
+
+    number_of_correlated_bands = Quantity(
+        type = int,
+        shape = [],
+        description = '''
+        Number of correlated bands for the local interactions.
+        ''')
+
+    number_of_correlated_electrons = Quantity(
+        type = np.dtype(np.float64),
+        shape = [],
+        description = '''
+        Number of valence electrons per atom in the correlated bands
+        ''')
+
+    U = Quantity(
+        type = np.dtype(np.float64),
+        shape = [],
+        unit = 'electron_volt',
+        description = '''
+        Value of the intra-orbital local interaction for d-orbitals
+        ''')
+
+    Up = Quantity(
+        type = np.dtype(np.float64),
+        shape = [],
+        unit = 'electron_volt',
+        description = '''
+        Value of the inter-orbital local interaction between d-orbitals
+        ''')
+
+    JH = Quantity(
+        type = np.dtype(np.float64),
+        shape = [],
+        unit = 'electron_volt',
+        description = '''
+        Value of the Hund's coupling between d-orbitals
+        ''')
+
+    temperature = Quantity(
+        type = np.dtype(np.float64),
+        shape = [],
+        unit = 'kelvin',
+        description = '''
+        Temperature in Kelvin calculated from the inverse temperature `beta` as:
+            T = 1/(kB*beta)
+        ''')
+
+    magnetic_state = Quantity(
+        type = MEnum(["para", "ferro", "antiferro"]),
+        shape = [],
+        description = '''
+        Magnetic state in which the DMFT calculation is done:
+
+        | Name          | State                   |
+        | ------------- | ----------------------- |
+        | `"para"`      | paramagnetic state      |
+        | `"ferro"`     | ferromagnetic state     |
+        | `"antiferro"` | antiferromagnetic state |
+        ''')
+
+    number_of_tau = Quantity(
+        type = int,
+        shape = [],
+        description = '''
+        Number of tau (imaginary times)
+        ''')
+
+    number_of_matsubara_freq = Quantity(
+        type = int,
+        shape = [],
+        description = '''
+        Number of Matsubara frequencies (imaginary frequencies)
+        ''')
+
+    self_energy_mixing = Quantity(
+        type = MEnum(["anisimov", "fll", "amf", "trace", "siginfbar", "sigzerobar"]),
+        shape = [],
+        description = '''
+        LDA+DMFT method for mixing the self-energy:
+
+        | Name          | Description                   |
+        | ------------- | ----------------------- |
+        | `"anisimov"`      | ???????      |
+        | `"fll"`      | ???????      |
+        | `"amf"`      | ???????      |
+        | `"trace"`      | ???????      |
+        | `"siginfbar"`      | ???????      |
+        | `"sigzerobar"`      | ???????      |
+        ''')
+
+    impurity_solver = Quantity(
+        type = MEnum(["CT-INT", "CT-HYB", "CT-AUX", "ED", "NRG", "MPS", "IPT", "NCA", "OCA", "slave_bosons"]),
+        shape = [],
+        description = '''
+        Impurity solver for the single impurity Anderson model:
+
+        | Name          | Description                   |
+        | ------------- | ----------------------- |
+        | `"CT-INT"`      | ???????      |
+        | `"CT-HYB"`      | ???????      |
+        | `"CT-AUX"`      | ???????      |
+        | `"ED"`      | ???????      |
+        | `"NRG"`      | ???????      |
+        | `"MPS"`      | ???????      |
+        | `"IPT"`      | ???????      |
+        | `"NCA"`      | ???????      |
+        | `"OCA"`      | ???????      |
+        | `"slave_bosons"`      | ???????      |
+        ''')
+
+
+class Method(simulation.method.Method):
+    '''
+    Section containing the various parameters that define the theory and the
+    approximations (convergence, thresholds, etc.) behind the calculation.
+    '''
+
+    m_def = Section(validate=False, extends_base_section=True)
+
+    dmft = SubSection(sub_section=DMFT.m_def, repeats=False)
 
 
 class Calculation(simulation.calculation.Calculation):
+    '''
+    Every calculation section contains the values computed
+    during a *single configuration calculation*, i.e. a calculation performed on a given
+    configuration of the system (as defined in section_system) and a given computational
+    method (e.g., exchange-correlation method, basis sets, as defined in section_method).
+
+    The link between the current section calculation and the related
+    system and method sections is established by the values stored in system_ref and
+    method_ref, respectively.
+
+    The reason why information on the system configuration and computational method is
+    stored separately is that several *single configuration calculations* can be performed
+    on the same system configuration, viz. several system configurations can be evaluated
+    with the same computational method. This storage strategy avoids redundancies.
+    '''
 
     m_def = Section(validate=False, extends_base_section=True)
 
@@ -934,3 +1101,14 @@ class Calculation(simulation.calculation.Calculation):
         ''')
 
     x_w2dynamics_ineq = SubSection(sub_section=x_w2dynamics_quantities.m_def, repeats=True)
+
+
+class Run(simulation.run.Run):
+
+    m_def = Section(validate=False, extends_base_section=True)
+
+    x_w2dynamics_axes = SubSection(sub_section=x_w2dynamics_axes.m_def, repeats=False)
+
+    x_w2dynamics_quantities = SubSection(sub_section=x_w2dynamics_quantities.m_def, repeats=True)
+
+    # TODO add config, environment variables

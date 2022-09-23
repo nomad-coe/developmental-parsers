@@ -1,8 +1,15 @@
 codeLabel: ALF
 codeLabelStyle: All in capitals
 codeName: alf
+codeUrl: https://gitpages.physik.uni-wuerzburg.de/ALF/ALF_Webpage/page/about/
 parserDirName: dependencies/parsers/developmental/developmentalparsers/alf/
 parserGitUrl: https://github.com/nomad-coe/developmental-parsers.git
 parserSpecific: ''
 preamble: ''
-tableOfFiles: ''
+tableOfFiles: |
+  | Input Filename  | Description |
+  | --- | --- |
+  | `data.h5` | (output) mainfile  |
+  | `confout.h5`  |  |
+  | `info`  | (output) model parameters and simulation info |
+  | `parameters`  | (input) |
