@@ -20,6 +20,7 @@ import os
 import logging
 import h5py
 import re
+import numpy as np
 
 from nomad.parsing.file_parser import TextParser, Quantity
 from nomad.datamodel.metainfo.simulation.run import Run, Program
@@ -27,36 +28,12 @@ from nomad.datamodel.metainfo.simulation.calculation import Calculation
 from nomad.datamodel.metainfo.simulation.method import Method
 from nomad.datamodel.metainfo.simulation.system import System
 from .metainfo.w2dynamics import (
-    x_w2dynamics_quantities, x_w2dynamics_axes, x_w2dynamics_input_parameters,
-    x_w2dynamics_atom_parameters, DMFT
+    x_w2dynamics_axes, x_w2dynamics_quantities, x_w2dynamics_config_parameters,
+    x_w2dynamics_config_atoms_parameters, x_w2dynamics_config_general_parameters,
+    x_w2dynamics_config_qmc_parameters, DMFT
 )
 
 re_n = r'[\n\r]'
-
-
-class ParameterParser(TextParser):
-    def init_quantities(self):
-        section_quantities = [
-            Quantity(
-                'parameter', f'{re_n} *([\w-]+ *= *.+)',
-                #repeats=True, str_operation=lambda x: x.split(' = ', 1))
-                repeats=True, str_operation=lambda x: [v.strip() for v in x.split('=', 1)])
-        ]
-
-        self._quantities = [
-            Quantity(
-                'general', r'(General\][\s\S]+?)(?:\]|\Z)',
-                sub_parser=TextParser(quantities=section_quantities)
-            ),
-            Quantity(
-                'atom', r'(\[\d+\]\][\s\S]+?)(?:\]|\Z)', repeats=True,
-                sub_parser=TextParser(quantities=section_quantities)
-            ),
-            Quantity(
-                'qmc', r'(QMC\][\s\S]+?)(?:\]|\Z)',
-                sub_parser=TextParser(quantities=section_quantities)
-            )
-        ]
 
 
 class LogParser(TextParser):
@@ -75,43 +52,21 @@ class LogParser(TextParser):
 class W2DynamicsParser:
     def __init__(self):
         self._re_namesafe = re.compile(r'[^\w]')
-        self.parameter_parser = ParameterParser()
         self.log_parser = LogParser()
 
-        self._method_keys_mapping = {
-            'NAt' : 'number_of_atoms_per_unit_cell',
+        self._dmft_keys_mapping = {
+            'hamiltonian' : 'local_hamiltonian',
+            'nat' : 'number_of_atoms_per_unit_cell',
+            'nd' : 'number_of_correlated_bands',
             'totdens' : 'number_of_correlated_electrons',
-            'beta' : 'temperature',
+            'udd' : 'U',
+            'vdd' : 'Up',
+            'jdd' : 'JH',
+            'beta' : 'inverse_temperature',
             'magnetism' : 'magnetic_state',
-            'dc' : 'self_energy_mixing',
-            'Hamiltonian' : 'local_hamiltonian',
-            'Nd' : 'number_of_correlated_bands',
-            'Udd' : 'U',
-            'Vdd' : 'Up',
-            'Jdd' : 'JH',
-            'Ntau' : 'number_of_tau',
-            'Niw' : 'number_of_matsubara_freq'
-        }
-
-        self._method_default = {
-            'general' : {
-                'NAt' : 1,
-                'totdens' : 0.0,
-                'beta' : 100.0,
-                'magnetism' : 'para',
-                'dc' : 'anisimov'
-            },
-            'atom': {
-                'Hamiltonian' : 'Density',
-                'Nd' : None,
-                'Udd' : 0.0,
-                'Vdd' : 0.0,
-                'Jdd' : 0.0
-            },
-            'qmc': {
-                'Ntau' : 1000,
-                'Niw' : 2000
-            }
+            'ntau' : 'number_of_tau',
+            'niw' : 'number_of_matsubara_freq',
+            'dc' : 'double_counting_mixing'
         }
 
         self._dataset_run_mapping = {
@@ -144,6 +99,43 @@ class W2DynamicsParser:
                 name = self._re_namesafe.sub('_', key)
                 setattr(target, f'x_w2dynamics_{name}', value[:])
 
+    def parse_method(self, data):
+        sec_run = self.archive.run[-1]
+
+        sec_method = sec_run.m_create(Method)
+
+        # Parse Method.x_w2dynamics_config quantities
+        sec_config = sec_method.m_create(x_w2dynamics_config_parameters)
+        config_sections = [
+            x_w2dynamics_config_atoms_parameters, x_w2dynamics_config_general_parameters,
+            x_w2dynamics_config_qmc_parameters]
+        for subsection in config_sections:
+            sec_config_subsection = sec_config.m_create(subsection)
+            for key in data.get('.config').attrs.keys():
+                parameters = data.get('.config').attrs.get(key)
+                keys_mod = (key.replace('-', '_')).split('.')
+
+                setattr(sec_config_subsection, f'x_w2dynamics_{keys_mod[-1]}', parameters)
+
+        # DMFT section
+        sec_dmft = sec_method.m_create(DMFT)
+        for key in data.get('.config').attrs.keys():
+            parameters = data.get('.config').attrs.get(key)
+            keys_mod = (key.replace('-', '_')).split('.')[-1]
+
+            # asign DMFT specific metadata
+            if keys_mod in self._dmft_keys_mapping:
+                print(keys_mod, self._dmft_keys_mapping[keys_mod], parameters)
+                setattr(sec_dmft, self._dmft_keys_mapping[keys_mod], parameters)
+
+            # check if umatrix.dat file exists
+            if keys_mod=='umatrix':
+                sec_dmft.is_U_matrix_file = True
+                umat_files = [f for f in os.listdir(self.maindir) if f.startswith(keys_mod)]
+                if not len(umat_files):
+                    sec_dmft.is_U_matrix_file = False
+        sec_dmft.impurity_solver = 'CT-HYB'
+
     def parse(self, filepath, archive, logger):
         self.filepath = filepath
         self.archive = archive
@@ -169,12 +161,12 @@ class W2DynamicsParser:
         sec_run.program = Program(
             name='w2dynamics', version=self.parse_program_version())
 
-        # Parsing code-specific i/o quantities
-        dataset_keys = [
-            '.axes', '.quantities']
-        for key in dataset_keys:
-            sec_dataset = sec_run.m_create(self._dataset_run_mapping[key])
-            self.parse_dataset(data[key], sec_dataset)
+        # run.x_w2dynamics_axes section
+        sec_axes = sec_run.m_create(x_w2dynamics_axes)
+        self.parse_dataset(data.get('.axes'), sec_axes)
+
+        # Method section
+        self.parse_method(data)
 
 '''
         # order calculations
@@ -193,74 +185,4 @@ class W2DynamicsParser:
                 if sub_key.startswith('ineq-'):
                     sec_ineq = sec_calc.m_create(x_w2dynamics_quantities)
                     parse_quantities(data[key][sub_key], sec_ineq)
-
-        # TODO determine if parameters/program version can be read from hdf5 file
-        # read parameters from parameter file if present
-        in_files = [f for f in os.listdir(self.maindir) if f.endswith('.in')]
-        if in_files:
-            if len(in_files) > 1:
-                self.logger.warn('Multiple parameter files found.')
-
-            self.parameter_parser.mainfile = os.path.join(self.maindir, in_files[0])
-
-            sec_system = sec_run.m_create(System)
-            sec_method = sec_run.m_create(Method)
-            sec_dmft = sec_method.m_create(DMFT)
-
-            sec_input_parameters = x_w2dynamics_input_parameters()
-
-            # [QMC]
-            for key in ['qmc']:
-                parameters = {key: val for key, val in self.parameter_parser.get(key, {}).get('parameter', [])}
-                if parameters:
-                    setattr(sec_input_parameters, f'x_w2dynamics_{key}', parameters)
-
-                    # Method(DMFT) quantities
-                    for key_mapping in self._method_keys_mapping.keys():
-                        if key_mapping in self._method_default[key]:
-                            setattr(sec_dmft, self._method_keys_mapping[key_mapping], self._method_default[key][key_mapping])
-                            if key_mapping in sec_input_parameters.x_w2dynamics_qmc.keys():
-                                setattr(sec_dmft, self._method_keys_mapping[key_mapping], sec_input_parameters.x_w2dynamics_qmc[key_mapping])
-
-            # [General]
-            for key in ['general']:
-                parameters = {key: val for key, val in self.parameter_parser.get(key, {}).get('parameter', [])}
-                if parameters:
-                    setattr(sec_input_parameters, f'x_w2dynamics_{key}', parameters)
-
-                    if parameters['DOS']:
-                        sec_system.dos = parameters['DOS']
-
-                    # Method(DMFT) quantities
-                    for key_mapping in self._method_keys_mapping.keys():
-                        if key_mapping in self._method_default[key]:
-                            setattr(sec_dmft, self._method_keys_mapping[key_mapping], self._method_default[key][key_mapping])
-                            if key_mapping in sec_input_parameters.x_w2dynamics_general.keys():
-                                setattr(sec_dmft, self._method_keys_mapping[key_mapping], sec_input_parameters.x_w2dynamics_general[key_mapping])
-
-                    # TODO decide on storing temperature or inverse_temperature
-                    # Storing the temperature in kelvin from beta = 1/(kB*T)
-                    #sec_dmft.temperature = 1.0/(k_B_eV*parameters['beta'])
-
-            sec_dmft.x_w2dynamics_input_parameters = sec_input_parameters
-
-            # [Atoms]
-            for atom in self.parameter_parser.get('atom', []):
-                parameters = {key: val for key, val in atom.get('parameter', [])}
-                if parameters:
-                    sec_atom = sec_dmft.m_create(x_w2dynamics_atom_parameters)
-                    sec_atom.x_w2dynamics_atom = parameters
-
-                    # Method(DMFT) quantities
-                    for key_mapping in self._method_keys_mapping.keys():
-                        if key_mapping in self._method_default['atom']:
-                            setattr(sec_dmft, self._method_keys_mapping[key_mapping], self._method_default['atom'][key_mapping])
-                            if key_mapping in sec_atom.x_w2dynamics_atom.keys():
-                                setattr(sec_dmft, self._method_keys_mapping[key_mapping], sec_atom.x_w2dynamics_atom[key_mapping])
-
-            # TODO check if this is always true (EDcheck?)
-            if sec_system.dos == 'EDcheck':
-                sec_dmft.impurity_solver = 'ED'
-            else:
-                sec_dmft.impurity_solver = 'CT-HYB'
 '''

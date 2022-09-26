@@ -30,24 +30,29 @@ m_package = Package()
 
 class x_w2dynamics_axes(MSection):
     '''
-    Quantities contained in .axes from the hdf5 mainfile
+    Quantities contained in .axes of the hdf5 mainfile.
     '''
 
     m_def = Section(validate=False)
 
     x_w2dynamics_iw = Quantity(
         type=np.dtype(np.float64),
+        shape=['Niw'],
         description='''
+        Matsubara frequencies.
         ''')
 
     x_w2dynamics_iwb_g4 = Quantity(
         type=np.dtype(np.float64),
+        shape=['N4iwb'],
         description='''
+        Number of bosonic Matsubaras for 4-point GF.
         ''')
 
     x_w2dynamics_iwb_p2 = Quantity(
         type=np.dtype(np.float64),
         description='''
+
         ''')
 
     x_w2dynamics_iwb_p3 = Quantity(
@@ -87,7 +92,9 @@ class x_w2dynamics_axes(MSection):
 
     x_w2dynamics_tau = Quantity(
         type=np.dtype(np.float64),
+        shape=['Ntau'],
         description='''
+        Tau times.
         ''')
 
     x_w2dynamics_tau_g4 = Quantity(
@@ -102,6 +109,7 @@ class x_w2dynamics_axes(MSection):
 
     x_w2dynamics_tauf = Quantity(
         type=np.dtype(np.float64),
+        shape=['Nftau'],
         description='''
         ''')
 
@@ -118,7 +126,7 @@ class x_w2dynamics_axes(MSection):
 
 class x_w2dynamics_quantities(MSection):
     '''
-    Quantities contained in .quantities from the hdf5 mainfile
+    Quantities contained in .quantities of the hdf5 mainfile.
     '''
 
     m_def = Section(validate=False)
@@ -848,37 +856,982 @@ class x_w2dynamics_quantities(MSection):
         ''')
 
 
-class x_w2dynamics_config(MSection):
+class x_w2dynamics_config_atoms_parameters(MSection):
     '''
-    Quantities contained in .config from the hdf5 mainfile
+    Input quantities contained in .config:atom.{x}.{name} of the hdf5 mainfile.
     '''
 
     m_def = Section(validate=False)
 
+    x_w2dynamics_hamiltonian = Quantity(
+        type=str,
+        description='''
+        Type of interacting hamiltonian.
+        ''')
 
-class x_w2dynamics_atom_parameters(MSection):
+    x_w2dynamics_jdd = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        Hunds coupling.
+        ''')
+
+    x_w2dynamics_jdp = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        J interaction between d-p orbitals.
+        ''')
+
+    x_w2dynamics_jpp = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        J interaction between p-p orbitals.
+        ''')
+
+    x_w2dynamics_jppod = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        ''')
+
+    x_w2dynamics_nd = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of d bands.
+        ''')
+
+    x_w2dynamics_nlig = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_np = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nsymmove = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of symmetry moves.
+        ''')
+
+    x_w2dynamics_phonon = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Switch for phonon interaction.
+        ''')
+
+    x_w2dynamics_quantumnumbers = Quantity(
+        type=str,
+        description='''
+        Good quantum numbers. Separated entries: "Nt" for total occupation, "Szt" for
+        spin component, "Qzt" for singly-occupiedness per orbital, "Azt" for occupation
+        per spin-orbital, "Lzt" for orbital angular momentum component assuming uniformly
+        spaced ascending values symmetric around zero for the impurity orbitals, "Jzt"
+        for total angular momentum component, and "All" for automatic partitioning of the
+        Hamiltonian into blocks.
+        ''')
+
+    x_w2dynamics_screening = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Switch for dynamical screening.
+        ''')
+
+    x_w2dynamics_se_shift = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_udd = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        Hubbard intra-orbital interaction.
+        ''')
+
+    x_w2dynamics_udp = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        U\' interaction between d-p orbitals.
+        ''')
+
+    x_w2dynamics_umatrix = Quantity(
+        type=str,
+        description='''
+        String containing the .dat file with the U-interactions matrix.
+        ''')
+
+    x_w2dynamics_upp = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        U interaction between p-p orbitals.
+        ''')
+
+    x_w2dynamics_uppod = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        ''')
+
+    x_w2dynamics_vdd = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        Hubbard inter-orbital interaction.
+        ''')
+
+    x_w2dynamics_vpp = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        U\' interaction between p-p orbitals.
+        ''')
+
+
+class x_w2dynamics_config_general_parameters(MSection):
+    '''
+    Input quantities contained in .config:general.{name} of the hdf5 mainfile.
+    '''
 
     m_def = Section(validate=False)
 
-    x_w2dynamics_atom = Quantity(
-        type=JSON,
+    x_w2dynamics_beta = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Inverse temperature.
+        ''')
+
+    x_w2dynamics_computedeltan = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        0 (false) or 1 (true).
+        ''')
+
+    x_w2dynamics_curvefit_maxhistory = Quantity(
+        type=np.dtype(np.int32),
         description='''
         ''')
 
+    x_w2dynamics_curvefit_minhistory = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
 
-class x_w2dynamics_input_parameters(MSection):
+    x_w2dynamics_curvefit_startat = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_curvefit_termdiffminlen = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_curvefit_termdiffthresh = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_curvefit_termminhist = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_curvefit_termntoterrfact = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_curvefit_termntotminlen = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_dc = Quantity(
+        type=str,
+        description='''
+        Double counting mixing type: 'anisimov', 'fll', 'amf', 'trace', 'siginfbar',
+        'sigzerobar'. Default = 'anisimov'.
+        ''')
+
+    x_w2dynamics_dc_dp = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Fixint of energetic distance between d and p orbitals.
+        ''')
+
+    x_w2dynamics_dc_mixing = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Mixing between old and new SE.
+        ''')
+
+    x_w2dynamics_dmftsteps = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of DMFT iterations.
+        ''')
+
+    x_w2dynamics_dos = Quantity(
+        type=str,
+        description='''
+        DOS input information: 'flat', 'semicirc', 'ReadIn', 'ReadInSO', 'Bethe',
+        'Bethe_in_tau', 'EDcheck', 'nano', 'CoulvsKan', 'readDelta'. Default = 'Bethe'.
+        ''')
+
+    x_w2dynamics_dos_deltino = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Deltino for the LDA DOS calculation
+        ''')
+
+    x_w2dynamics_dump_mixer = Quantity(
+        type=str,
+        description='''
+        ''')
+
+    x_w2dynamics_epseq = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Epsilon for identical atom in unit cell.
+        ''')
+
+    x_w2dynamics_epsldan = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Eps between lda dens and totdens readjust mu.
+        ''')
+
+    x_w2dynamics_epsmatsn = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Rps between model and num tail to trunc.
+        ''')
+
+    x_w2dynamics_epsn = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        eps between mats sum and totdens readjust mu.
+        ''')
+
+    x_w2dynamics_epsoffdiag = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Epsilon for checking off-diagonal Hybridisation elements.
+        ''')
+
+    x_w2dynamics_eqmaxfreq = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Frequency cut-off for equivalence detection.
+        ''')
+
+    x_w2dynamics_filenameprefix = Quantity(
+        type=str,
+        description='''
+        Prefix for output file.
+        ''')
+
+    x_w2dynamics_fileold = Quantity(
+        type=str,
+        description='''
+        ''')
+
+    x_w2dynamics_fttype = Quantity(
+        type=str,
+        description='''
+        FFT type: 'none', 'plain', 'legendre', 'none_worm'. Default = 'legendre'.
+        ''')
+
+    x_w2dynamics_gw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Switch to GW self-energy calculation: 0 = False, 1 = True.
+        ''')
+
+    x_w2dynamics_gw_kaverage = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Calculation of local GW contribution - K-average or model.
+        ''')
+
+    x_w2dynamics_half_bandwidth = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Half-bandwidth of the DOS.
+        ''')
+
+    x_w2dynamics_hkfile = Quantity(
+        type=str,
+        description='''
+        Filename of the H_k file.
+        ''')
+
+    x_w2dynamics_magnetism = Quantity(
+        type=str,
+        description='''
+        Magnetic state for DMFT calculation: 'para', 'ferro', 'antiferro'. Default = 'para'.
+        ''')
+
+    x_w2dynamics_mixing = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Mixing between old and new SE.
+        ''')
+
+    x_w2dynamics_mixing_diis_history = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_mixing_diis_period = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_mixing_strategy = Quantity(
+        type=str,
+        description='''
+        Mixing strategy: 'linear', 'diis'. Default = 'linear'.
+        ''')
+
+    x_w2dynamics_mu = Quantity(
+        type=np.dtype(np.float64),
+        units='electron_volt',
+        description='''
+        Chemical potential.
+        ''')
+
+    x_w2dynamics_mu_mixing = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Mix in old chemical potential.
+        ''')
+
+    x_w2dynamics_mu_n_load_old = Quantity(
+        type=np.dtype(np.bool_),
+        description='''
+        ''')
+
+    x_w2dynamics_mu_search = Quantity(
+        type=str,
+        description='''
+        Mu search: 'nloc', 'kappa', 'mixer'. Default = 'nloc'.
+        ''')
+
+    x_w2dynamics_nat = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of atoms for the LDA+DMFT calculation.
+        ''')
+
+    x_w2dynamics_neps = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Numerical integration of DOS.
+        ''')
+
+    x_w2dynamics_read_mixer = Quantity(
+        type=str,
+        description='''
+        ''')
+
+    x_w2dynamics_readleads = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Read leads from leads-file.
+        ''')
+
+    x_w2dynamics_readold = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Start again from nth iteration.
+        ''')
+
+    x_w2dynamics_readold_mapsiw = Quantity(
+        type=str,
+        description='''
+        ''')
+
+    x_w2dynamics_readold_mu = Quantity(
+        type=str,
+        description='''
+        Default: uses General.mu as mu if General.EPSN == 0; always: when reading old
+        output, uses mu from last iteration as mu even if General.EPSN == 0.
+        ''')
+
+    x_w2dynamics_readold_preload_mixer = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_selfenergy = Quantity(
+        type=str,
+        description='''
+        Options to calculate the DMFT self-energy: 'dyson', 'improved',
+        'improved_worm', 'symmetric_improved_worm'. Default = 'dyson'.
+        ''')
+
+    x_w2dynamics_sgwnlfile = Quantity(
+        type=str,
+        description='''
+        File that contains the NON-LOCAL GW self-energy.
+        ''')
+
+    x_w2dynamics_siw_moments = Quantity(
+        type=str,
+        description='''
+        SIW moments: 'estimate', 'extract'. Default = 'estimate'.
+        ''')
+
+    x_w2dynamics_slurmonlycontinueiftime = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_slurmstopfile = Quantity(
+        type=np.dtype(np.bool_),
+        description='''
+        ''')
+
+    x_w2dynamics_statisticsteps = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of static steps.
+        ''')
+
+    x_w2dynamics_totdens = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Number of valence electrons in the correlated subspace per atom.
+        ''')
+
+    x_w2dynamics_uw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Include dynamical U(w).
+        ''')
+
+    x_w2dynamics_uw_mat = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Reading real or Matsubara frequencies from Uw files.
+        ''')
+
+    x_w2dynamics_wormsteps = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of worm steps.
+        ''')
+
+    x_w2dynamics_write = Quantity(
+        type=str,
+        description='''
+        Write options: 'full', 'normal', 'minimal'. Default = 'normal'.
+        ''')
+
+
+class x_w2dynamics_config_qmc_parameters(MSection):
+    '''
+    Input quantities contained in .config:general.{name} of the hdf5 mainfile.
+    '''
 
     m_def = Section(validate=False)
 
-    x_w2dynamics_general = Quantity(
-        type=JSON,
+    x_w2dynamics_accumgtau = Quantity(
+        type=np.dtype(np.int32),
         description='''
         ''')
 
-    x_w2dynamics_qmc = Quantity(
-        type=JSON,
+    x_w2dynamics_eigenbasis = Quantity(
+        type=np.dtype(np.int32),
         description='''
         ''')
+
+    x_w2dynamics_enableoutertruncation = Quantity(
+        type=str,
+        description='''
+        ''')
+
+    x_w2dynamics_epsevec = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_epslanc = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_epssandwich = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_epstracevec = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_flavourchange_moves = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_fourpnt = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_full_offdiag = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_g4ph = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_g4pp = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_gtau_mean_step = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_gtau_mid_step = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_maxhisto = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_meas_dm_old = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_measdensitymatrix = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_measexpresdensitymatrix = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_measg2iw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_measg4iwpp = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_measgiw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_measgsigmaiw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_measgtaudetrat = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_meassusz = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_measurementtiming = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_n2iwb = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_n3iwb = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_n3iwf = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_n4iwb = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_n4iwf = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_n4leg = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_n4tau = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nbatchsize_nfft_worm = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nbin = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_ncorr = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nfft_mode_g4iw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nftau = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nice_selfenergy = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_niw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nlegmax = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nlegorder = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nlookup_nfft = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nmeas = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nseed = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_ntau = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nwarmups = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_nwarmups2plus = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_offd_strength = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_offdiag = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_percentage4operatormove = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_percentageglobalmove = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_percentageoutermove = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_percentagetaushiftmove = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_percentageworminsert = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_percentagewormoutermove = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_percentagewormreplace = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_printdensitymatrixbasis = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_reusemcconfig = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_segment = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_sign_step = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_statesampling = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_taudiffmax = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_truncation = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_update_trace = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormcombinegiw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormeta = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasg4iw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasgiw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasgsigmaiw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasgtau = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeash4iw = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasnqqdag = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasp2iwph = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasp2iwpp = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasp2tauph = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasp2taupp = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasp3iwph = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasp3iwpp = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasqq = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasqqdd = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasqqqq = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasqqtau = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasquddag = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasucaca = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasucacatau = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasuccaa = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormmeasuccaatau = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormphconvention = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormsearcheta = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormsearchetamaxiter = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_wormzmeasg = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+    x_w2dynamics_writecovmeangiw = Quantity(
+        type=np.dtype(np.bool_),
+        description='''
+        ''')
+
+    x_w2dynamics_writecovmeansigmaiw = Quantity(
+        type=np.dtype(np.bool_),
+        description='''
+        ''')
+
+    x_w2dynamics_writemcconfig = Quantity(
+        type=np.dtype(np.bool_),
+        description='''
+        ''')
+
+    x_w2dynamics_zphconvention = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        ''')
+
+
+class x_w2dynamics_config_parameters(MSection):
+    '''
+    Section grouping the different input configuration parameters.
+    '''
+
+    m_def = Section(validate=False)
+
+    x_w2dynamics_config_atoms = SubSection(sub_section=x_w2dynamics_config_atoms_parameters.m_def, repeats=True)
+
+    x_w2dynamics_config_general = SubSection(sub_section=x_w2dynamics_config_general_parameters.m_def, repeats=False)
+
+    x_w2dynamics_config_qmc = SubSection(sub_section=x_w2dynamics_config_qmc_parameters.m_def, repeats=False)
 
 
 class System(simulation.system.System):
@@ -905,14 +1858,10 @@ class DMFT(MSection):
 
     m_def = Section(validate=False)
 
-    x_w2dynamics_input_parameters = SubSection(sub_section=x_w2dynamics_input_parameters.m_def, repeats=False)
-
-    x_w2dynamics_atom_parameters = SubSection(sub_section=x_w2dynamics_atom_parameters.m_def, repeats=True)
-
     local_hamiltonian = Quantity(
-        type = MEnum(["Density", "Kanamori", "Coulomb", "ReadUmatrix", "ReadNormalUmatrix"]),
-        shape = [],
-        description = '''
+        type=MEnum(["Density", "Kanamori", "Coulomb", "ReadUmatrix", "ReadNormalUmatrix"]),
+        shape=[],
+        description='''
         Form of the local Coulomb interacting Hamiltonian:
 
         | Name                  | Description                               |
@@ -925,63 +1874,70 @@ class DMFT(MSection):
         ''')
 
     number_of_atoms_per_unit_cell = Quantity(
-        type = int,
-        shape = [],
-        description = '''
+        type=np.dtype(np.int32),
+        shape=[],
+        description='''
         Number of atoms per unit cell
         ''')
 
     number_of_correlated_bands = Quantity(
-        type = int,
-        shape = [],
-        description = '''
+        type=np.dtype(np.int32),
+        shape=[],
+        description='''
         Number of correlated bands for the local interactions.
         ''')
 
     number_of_correlated_electrons = Quantity(
-        type = np.dtype(np.float64),
-        shape = [],
-        description = '''
+        type=np.dtype(np.float64),
+        shape=[],
+        description='''
         Number of valence electrons per atom in the correlated bands
         ''')
 
     U = Quantity(
-        type = np.dtype(np.float64),
-        shape = [],
-        unit = 'electron_volt',
-        description = '''
+        type=np.dtype(np.float64),
+        shape=[],
+        unit='electron_volt',
+        description='''
         Value of the intra-orbital local interaction for d-orbitals
         ''')
 
     Up = Quantity(
-        type = np.dtype(np.float64),
-        shape = [],
-        unit = 'electron_volt',
-        description = '''
+        type=np.dtype(np.float64),
+        shape=[],
+        unit='electron_volt',
+        description='''
         Value of the inter-orbital local interaction between d-orbitals
         ''')
 
     JH = Quantity(
-        type = np.dtype(np.float64),
-        shape = [],
-        unit = 'electron_volt',
-        description = '''
+        type=np.dtype(np.float64),
+        shape=[],
+        unit='electron_volt',
+        description='''
         Value of the Hund's coupling between d-orbitals
         ''')
 
-    temperature = Quantity(
-        type = np.dtype(np.float64),
-        shape = [],
-        unit = 'kelvin',
-        description = '''
-        Temperature in Kelvin calculated from the inverse temperature `beta` as:
-            T = 1/(kB*beta)
+    is_U_matrix_file=Quantity(
+        type=np.dtype(np.bool_),
+        description='''
+        Is the umatrix.dat available?
+
+        True > Umn are defined from the umatrix.dat file.
+        False > Umn are defined from Kanamori parameters (U, U\', JH) OR Slater integrals (F0, F2, F4, F6).
+        ''')
+
+    inverse_temperature = Quantity(
+        type=np.dtype(np.float64),
+        shape=[],
+        description='''
+        Inverse temperature = 1/(kB*T)
         ''')
 
     magnetic_state = Quantity(
-        type = MEnum(["para", "ferro", "antiferro"]),
-        shape = [],
-        description = '''
+        type=MEnum(["para", "ferro", "antiferro"]),
+        shape=[],
+        description='''
         Magnetic state in which the DMFT calculation is done:
 
         | Name          | State                   |
@@ -991,25 +1947,25 @@ class DMFT(MSection):
         | `"antiferro"` | antiferromagnetic state |
         ''')
 
-    number_of_tau = Quantity(
-        type = int,
-        shape = [],
-        description = '''
-        Number of tau (imaginary times)
-        ''')
-
     number_of_matsubara_freq = Quantity(
-        type = int,
-        shape = [],
-        description = '''
+        type=np.dtype(np.int32),
+        shape=[],
+        description='''
         Number of Matsubara frequencies (imaginary frequencies)
         ''')
 
-    self_energy_mixing = Quantity(
-        type = MEnum(["anisimov", "fll", "amf", "trace", "siginfbar", "sigzerobar"]),
-        shape = [],
-        description = '''
-        LDA+DMFT method for mixing the self-energy:
+    number_of_tau = Quantity(
+        type=np.dtype(np.int32),
+        shape=[],
+        description='''
+        Number of tau (imaginary times)
+        ''')
+
+    double_counting_mixing = Quantity(
+        type=MEnum(["anisimov", "fll", "amf", "trace", "siginfbar", "sigzerobar"]),
+        shape=[],
+        description='''
+        LDA+DMFT method for mixing the double counting self-energy:
 
         | Name          | Description                   |
         | ------------- | ----------------------- |
@@ -1022,10 +1978,10 @@ class DMFT(MSection):
         ''')
 
     impurity_solver = Quantity(
-        type = MEnum(["CT-INT", "CT-HYB", "CT-AUX", "ED", "NRG", "MPS", "IPT", "NCA", "OCA", "slave_bosons"]),
-        shape = [],
-        description = '''
-        Impurity solver for the single impurity Anderson model:
+        type=MEnum(["CT-INT", "CT-HYB", "CT-AUX", "ED", "NRG", "MPS", "IPT", "NCA", "OCA", "slave_bosons"]),
+        shape=[],
+        description='''
+        Impurity solver method for the single impurity Anderson model:
 
         | Name          | Description                   |
         | ------------- | ----------------------- |
@@ -1049,6 +2005,8 @@ class Method(simulation.method.Method):
     '''
 
     m_def = Section(validate=False, extends_base_section=True)
+
+    x_w2dynamics_config = SubSection(sub_section=x_w2dynamics_config_parameters.m_def, repeats=False)
 
     dmft = SubSection(sub_section=DMFT.m_def, repeats=False)
 
@@ -1122,7 +2080,5 @@ class Run(simulation.run.Run):
     m_def = Section(validate=False, extends_base_section=True)
 
     x_w2dynamics_axes = SubSection(sub_section=x_w2dynamics_axes.m_def, repeats=False)
-
-    x_w2dynamics_quantities = SubSection(sub_section=x_w2dynamics_quantities.m_def, repeats=True)
 
     # TODO add config, environment variables
