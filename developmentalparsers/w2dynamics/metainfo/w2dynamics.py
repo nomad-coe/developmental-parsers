@@ -29,6 +29,9 @@ m_package = Package()
 
 
 class x_w2dynamics_axes(MSection):
+    '''
+    Quantities contained in .axes from the hdf5 mainfile
+    '''
 
     m_def = Section(validate=False)
 
@@ -114,6 +117,9 @@ class x_w2dynamics_axes(MSection):
 
 
 class x_w2dynamics_quantities(MSection):
+    '''
+    Quantities contained in .quantities from the hdf5 mainfile
+    '''
 
     m_def = Section(validate=False)
 
@@ -840,6 +846,14 @@ class x_w2dynamics_quantities(MSection):
         description='''
         Worm balancing factor
         ''')
+
+
+class x_w2dynamics_config(MSection):
+    '''
+    Quantities contained in .config from the hdf5 mainfile
+    '''
+
+    m_def = Section(validate=False)
 
 
 class x_w2dynamics_atom_parameters(MSection):

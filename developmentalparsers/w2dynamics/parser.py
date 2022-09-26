@@ -32,7 +32,6 @@ from .metainfo.w2dynamics import (
 )
 
 re_n = r'[\n\r]'
-k_B_eV = 8.617333262e-5 # Boltzmann constant in eV K^-1
 
 
 class ParameterParser(TextParser):
@@ -60,7 +59,7 @@ class ParameterParser(TextParser):
         ]
 
 
-class InfoParser(TextParser):
+class LogParser(TextParser):
     def __init__(self):
         super().__init__(None)
 
@@ -77,7 +76,7 @@ class W2DynamicsParser:
     def __init__(self):
         self._re_namesafe = re.compile(r'[^\w]')
         self.parameter_parser = ParameterParser()
-        self.info_parser = InfoParser()
+        self.log_parser = LogParser()
 
         self._method_keys_mapping = {
             'NAt' : 'number_of_atoms_per_unit_cell',
@@ -115,12 +114,46 @@ class W2DynamicsParser:
             }
         }
 
-    def parse(self, filepath, archive, logger):
-        self.filepath = os.path.abspath(filepath)
-        self.archive = archive
-        self.logger = logging.getLogger(__name__) if logger is None else logger
-        self.maindir = os.path.dirname(self.filepath)
+        self._dataset_run_mapping = {
+            '.axes': x_w2dynamics_axes,
+            '.quantities': x_w2dynamics_quantities
+        }
 
+    def parse_program_version(self):
+        # read program version from .log file if present
+        log_files = [f for f in os.listdir(self.maindir) if f.endswith('.log')]
+        if log_files:
+            if len(log_files) > 1:
+                self.logger.warn('Multiple logging files found.')
+
+            self.log_parser.mainfile = os.path.join(self.maindir, log_files[0])
+
+            return self.log_parser.get('program_version', None)
+
+    def parse_dataset(self, source, target, include=[]):
+        for key in source.keys():
+            if include and key not in include:
+                continue
+            # resolve value from 'value'
+            value = source[key]
+            if isinstance(value, h5py.Group) and 'value' in value.keys():
+                value = value['value']
+            if not isinstance(value, h5py.Dataset):
+                continue
+            if value.shape:
+                name = self._re_namesafe.sub('_', key)
+                setattr(target, f'x_w2dynamics_{name}', value[:])
+
+    def parse(self, filepath, archive, logger):
+        self.filepath = filepath
+        self.archive = archive
+        self.maindir = os.path.dirname(self.filepath)
+        self.logger = logging.getLogger(__name__) if logger is None else logger
+
+        self._method_type = 'DMFT'
+
+        # TODO move mainfile as hdf5 to MatchingParserInterface list and
+        # create init_parser() for the mainfile?
         try:
             data = h5py.File(self.filepath)
         except Exception:
@@ -132,20 +165,18 @@ class W2DynamicsParser:
 
         sec_run = archive.m_create(Run)
 
-        def parse_quantities(source, target, include=[]):
-            for key in source.keys():
-                if include and key not in include:
-                    continue
-                # resolve value from 'value'
-                value = source[key]
-                if isinstance(value, h5py.Group) and 'value' in value.keys():
-                    value = value['value']
-                if not isinstance(value, h5py.Dataset):
-                    continue
-                if value.shape:
-                    name = self._re_namesafe.sub('_', key)
-                    setattr(target, f'x_w2dynamics_{name}', value[:])
+        # Program section
+        sec_run.program = Program(
+            name='w2dynamics', version=self.parse_program_version())
 
+        # Parsing code-specific i/o quantities
+        dataset_keys = [
+            '.axes', '.quantities']
+        for key in dataset_keys:
+            sec_dataset = sec_run.m_create(self._dataset_run_mapping[key])
+            self.parse_dataset(data[key], sec_dataset)
+
+'''
         # order calculations
         calc_keys = [key for key in data.keys() if key.startswith('dmft-') or key.startswith('stat-')]
         calc_keys.sort()
@@ -162,14 +193,6 @@ class W2DynamicsParser:
                 if sub_key.startswith('ineq-'):
                     sec_ineq = sec_calc.m_create(x_w2dynamics_quantities)
                     parse_quantities(data[key][sub_key], sec_ineq)
-
-        if '.quantities' in data.keys():
-            sec_quantities = sec_run.m_create(x_w2dynamics_quantities)
-            parse_quantities(data['.quantities'], sec_quantities)
-
-        if '.axes' in data.keys():
-            sec_axes = sec_run.m_create(x_w2dynamics_axes)
-            parse_quantities(data['.axes'], sec_axes)
 
         # TODO determine if parameters/program version can be read from hdf5 file
         # read parameters from parameter file if present
@@ -217,7 +240,7 @@ class W2DynamicsParser:
 
                     # TODO decide on storing temperature or inverse_temperature
                     # Storing the temperature in kelvin from beta = 1/(kB*T)
-                    sec_dmft.temperature = 1.0/(k_B_eV*parameters['beta'])
+                    #sec_dmft.temperature = 1.0/(k_B_eV*parameters['beta'])
 
             sec_dmft.x_w2dynamics_input_parameters = sec_input_parameters
 
@@ -240,17 +263,4 @@ class W2DynamicsParser:
                 sec_dmft.impurity_solver = 'ED'
             else:
                 sec_dmft.impurity_solver = 'CT-HYB'
-
-        sec_program = sec_run.m_create(Program)
-        sec_program.name = 'w2dynamics'
-        # read program version from .log file if present
-        log_files = [f for f in os.listdir(self.maindir) if f.endswith('.log')]
-        if log_files:
-            if len(log_files) > 1:
-                self.logger.warn('Multiple logging files found.')
-
-            self.info_parser.mainfile = os.path.join(self.maindir, log_files[0])
-
-            version = self.info_parser.get('program_version', '')
-            if version:
-                sec_program.version = version
+'''
