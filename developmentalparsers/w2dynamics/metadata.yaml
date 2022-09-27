@@ -1,0 +1,19 @@
+codeLabel: w2dynamics
+codeLabelStyle: All in lowercase
+codeName: w2dynamics
+codeCategory: Atomistic code
+status: developmental
+codeUrl: https://github.com/w2dynamics/w2dynamics
+parserDirName: dependencies/parsers/developmental/developmentalparsers/w2dynamics/
+parserGitUrl: https://github.com/nomad-coe/developmental-parsers.git
+parserSpecific: ''
+preamble: ''
+tableOfFiles: |
+  | Input Filename | Description |
+  | --- | --- |
+  | `*.hdf5` | **Mainfile:** hdf5 file containing all i/o parameters w/ arbitrary name |
+  | `*.in` | input text file containing [general], [atoms], and [QMC] input parameters |
+  | `w2d*.dat` | input text data file containing the lattice model hamiltonian |
+  | `epsk` | plain text, discrete bath levels |
+  | `Vk` | plain text, hybridizations |
+  | `w2d.log` | output log error file |
