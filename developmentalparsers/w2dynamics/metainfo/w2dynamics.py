@@ -1834,23 +1834,6 @@ class x_w2dynamics_config_parameters(MSection):
     x_w2dynamics_config_qmc = SubSection(sub_section=x_w2dynamics_config_qmc_parameters.m_def, repeats=False)
 
 
-class System(simulation.system.System):
-    '''
-    Contains parameters describing a system of atomic configuration. These inclue the
-    compound name, atomic positions, lattice vectors, contraints on the atoms, etc.
-    '''
-
-    m_def = Section(validate=False, extends_base_section=True)
-
-    # TODO extend this quantity
-    dos = Quantity(
-        type = str,
-        shape = [],
-        description = '''
-        DOS choice
-        ''')
-
-
 class DMFT(MSection):
     '''
     Section containing the various parameters that define a DMFT calculation
@@ -1918,7 +1901,7 @@ class DMFT(MSection):
         Value of the Hund's coupling between d-orbitals
         ''')
 
-    is_U_matrix_file=Quantity(
+    is_U_matrix_file = Quantity(
         type=np.dtype(np.bool_),
         description='''
         Is the umatrix.dat available?
@@ -2032,44 +2015,45 @@ class Calculation(simulation.calculation.Calculation):
 
     x_w2dynamics_dc_latt = Quantity(
         type=np.dtype(np.float64),
-        shape=['x_w2dynamics_band1', 'x_w2dynamics_spin1', 'x_w2dynamics_band2', 'x_w2dynamics_spin2'],
+        shape=['x_w2dynamics_nd', 2, 'x_w2dynamics_nd', 2],
         description='''
-        double counting correction on the lattice
+        Double counting correction on the lattice.
         ''')
 
     x_w2dynamics_gdensnew = Quantity(
         type=np.dtype(np.float64),
-        shape=['x_w2dynamics_lda_band1', 'x_w2dynamics_spin1', 'x_w2dynamics_lda_band2', 'x_w2dynamics_spin2'],
+        shape=['x_w2dynamics_nd', 2, 'x_w2dynamics_nd', 2],
         description='''
-        densities with new self-energy after adjustment of mu
+        Densities with new self-energy after adjustment of mu.
         ''')
 
     x_w2dynamics_gdensold = Quantity(
         type=np.dtype(np.float64),
-        shape=['x_w2dynamics_lda_band1', 'x_w2dynamics_spin1', 'x_w2dynamics_lda_band2', 'x_w2dynamics_spin2'],
+        shape=['x_w2dynamics_nd', 2, 'x_w2dynamics_nd', 2],
         description='''
-        densities with old self-energy before adjustment of mu
+        Densities with old self-energy before adjustment of mu.
         ''')
 
     x_w2dynamics_glocnew_lattice = Quantity(
         type=np.dtype(np.float64),
-        shape=['x_w2dynamics_lda_band', 'x_w2dynamics_spin', 'x_w2dynamics_iw'],
+        shape=['x_w2dynamics_nd', 2, 'Niw'],
         description='''
-        local Green's function in Matsubara (old self-energy), diagonal part for all lda-bands
+        Local Green's function in Matsubara (old self-energy), diagonal part for all lda-bands.
         ''')
 
     x_w2dynamics_glocold_lattice = Quantity(
         type=np.dtype(np.float64),
-        shape=['x_w2dynamics_lda_band', 'x_w2dynamics_spin', 'x_w2dynamics_iw'],
+        shape=['x_w2dynamics_nd', 2, 'Niw'],
         description='''
-        local Green's function in Matsubara (old self-energy), diagonal part for all lda-bands
+        Local Green's function in Matsubara (old self-energy), diagonal part for all lda-bands.
         ''')
 
     x_w2dynamics_mu = Quantity(
         type=np.dtype(np.float64),
         shape=[],
+        units='electron_volt',
         description='''
-        chemical potential (lattice model)
+        Chemical potential (lattice model).
         ''')
 
     x_w2dynamics_ineq = SubSection(sub_section=x_w2dynamics_quantities.m_def, repeats=True)
