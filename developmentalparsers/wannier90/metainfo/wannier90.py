@@ -23,6 +23,7 @@ from nomad.metainfo import (  # pylint: disable=unused-import
     Reference, MEnum, JSON
 )
 from nomad.datamodel.metainfo import simulation
+from nomad.datamodel.metainfo.simulation.method import KMesh
 
 
 m_package = Package()
@@ -34,6 +35,48 @@ class Projections(MSection):
     '''
 
     m_def = Section(validate=False)
+
+    k_mesh = SubSection(sub_section=KMesh.m_def, repeats=False)
+
+    number_of_projected_orbitals = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of Wannier orbitals used to fit the DFT band structure
+        ''')
+
+    number_of_bands = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of input Bloch bands.
+        ''')
+
+    is_maximally_localise = Quantity(
+        type=bool,
+        description='''
+        Are the projected orbitals maximally localized or just a single-shot projection?
+        ''')
+
+    convergence_tolerance_ml = Quantity(
+        type=np.dtype(np.float64),
+        description='''
+        Convergence tolerance for maximal localization of the projected orbitals.
+        ''')
+
+    outer_energy_window = Quantity(
+        type=np.dtype(np.float64),
+        unit='electron_volt',
+        shape=[2],
+        description='''
+        Bottom and top of the outer energy window used for the projection.
+        ''')
+
+    inner_energy_window = Quantity(
+        type=np.dtype(np.float64),
+        unit='electron_volt',
+        shape=[2],
+        description='''
+        Bottom and top of the inner energy window used for the projection.
+        ''')
 
 
 class Method(simulation.method.Method):
@@ -66,56 +109,7 @@ class Calculation(simulation.calculation.Calculation):
 
     m_def = Section(validate=False, extends_base_section=True)
 
-    x_w2dynamics_dc_latt = Quantity(
-        type=np.dtype(np.float64),
-        shape=['x_w2dynamics_nd', 2, 'x_w2dynamics_nd', 2],
-        description='''
-        Double counting correction on the lattice.
-        ''')
-
-    x_w2dynamics_gdensnew = Quantity(
-        type=np.dtype(np.float64),
-        shape=['x_w2dynamics_nd', 2, 'x_w2dynamics_nd', 2],
-        description='''
-        Densities with new self-energy after adjustment of mu.
-        ''')
-
-    x_w2dynamics_gdensold = Quantity(
-        type=np.dtype(np.float64),
-        shape=['x_w2dynamics_nd', 2, 'x_w2dynamics_nd', 2],
-        description='''
-        Densities with old self-energy before adjustment of mu.
-        ''')
-
-    x_w2dynamics_glocnew_lattice = Quantity(
-        type=np.dtype(np.float64),
-        shape=['x_w2dynamics_nd', 2, 'Niw'],
-        description='''
-        Local Green's function in Matsubara (old self-energy), diagonal part for all lda-bands.
-        ''')
-
-    x_w2dynamics_glocold_lattice = Quantity(
-        type=np.dtype(np.float64),
-        shape=['x_w2dynamics_nd', 2, 'Niw'],
-        description='''
-        Local Green's function in Matsubara (old self-energy), diagonal part for all lda-bands.
-        ''')
-
-    x_w2dynamics_mu = Quantity(
-        type=np.dtype(np.float64),
-        shape=[],
-        units='electron_volt',
-        description='''
-        Chemical potential (lattice model).
-        ''')
-
-    x_w2dynamics_ineq = SubSection(sub_section=x_w2dynamics_quantities.m_def, repeats=True)
-
 
 class Run(simulation.run.Run):
 
     m_def = Section(validate=False, extends_base_section=True)
-
-    x_w2dynamics_axes = SubSection(sub_section=x_w2dynamics_axes.m_def, repeats=False)
-
-    # TODO add config, environment variables
