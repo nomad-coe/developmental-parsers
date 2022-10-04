@@ -31,7 +31,9 @@ from nomad.datamodel.metainfo.simulation.calculation import (
 )
 from nomad.datamodel.metainfo.simulation.method import Method, KMesh
 from nomad.datamodel.metainfo.simulation.system import System
-from .metainfo.wannier90 import Projections
+from .metainfo.wannier90 import (
+    Projections, x_wannier90_hopping_parameters
+)
 
 re_n = r'[\n\r]'
 
@@ -106,7 +108,9 @@ class HrParser(TextParser):
         super().__init__(None)
 
     def init_quantities(self):
-        pass
+        self._quantities = [
+            Quantity('degeneracy_factors', r'\s*written on[\s\w]*:\d*:\d*\s*([\d\s]+)'),
+            Quantity('hoppings', rf'\s*([-\d\s.]+)', repeats=False)]
 
 
 class Wannier90Parser:
@@ -114,7 +118,7 @@ class Wannier90Parser:
         self.wout_parser = WOutParser()
         self.win_parser = WInParser()
         self.band_dat_parser = DataTextParser()
-        #self.hr_dat_parser = HrParser()
+        self.hr_parser = HrParser()
 
         self._input_projection_mapping = {
             'Nwannier': 'number_of_projected_orbitals',
@@ -137,10 +141,25 @@ class Wannier90Parser:
             setattr(sec_proj, self._input_projection_mapping[key], self.wout_parser.get(key))
         if self.wout_parser.get('Niter') is not None:
             sec_proj.is_maximally_localise = False
-            if self.wout_parser.get('Niter')>1:
+            if self.wout_parser.get('Niter') > 1:
                 sec_proj.is_maximally_localise = True
         sec_proj.outer_energy_window = self.wout_parser.get('energy_windows').outer
         sec_proj.inner_energy_window = self.wout_parser.get('energy_windows').inner
+
+    def parse_hoppings(self):
+        sec_run = self.archive.run[-1]
+
+        hr_files = [f for f in os.listdir(self.maindir) if f.endswith('_hr.dat')]
+        if not hr_files:
+            return
+
+        self.hr_parser.mainfile = os.path.join(self.maindir, hr_files[0])
+        sec_wannier = sec_run.m_create(x_wannier90_hopping_parameters)
+
+        sec_wannier.nrpts = self.hr_parser.get('degeneracy_factors')[1]
+        sec_wannier.degeneracy_factors = self.hr_parser.get('degeneracy_factors')[2:]
+        full_hoppings = np.array(self.hr_parser.get('hoppings'))
+        sec_wannier.hopping_matrix = np.array(np.array_split(full_hoppings, sec_wannier.nrpts))
 
     def get_k_points(self):
         reciprocal_lattice_vectors = np.vstack(self.wout_parser.get('reciprocal_lattice_vectors'))
@@ -156,15 +175,15 @@ class Wannier90Parser:
                 k_symm_points.append(np.dot(k_segments, reciprocal_lattice_vectors))
 
         n_k_segments_1 = self.wout_parser.get('div_first_k_segment')
-        delta_k = np.linalg.norm(k_symm_points[1] - k_symm_points[0])/n_k_segments_1
+        delta_k = np.linalg.norm(k_symm_points[1] - k_symm_points[0]) / n_k_segments_1
         n_kpoints = 1
         kpoints = []
         for ns in range(self.wout_parser.get('n_k_segments')):
-            n_k_segments = round(np.linalg.norm(k_symm_points[ns+1]-k_symm_points[ns])/delta_k)
+            n_k_segments = round(np.linalg.norm(k_symm_points[ns + 1] - k_symm_points[ns]) / delta_k)
             n_kpoints += n_k_segments
 
             for i in range(n_k_segments):
-                kpoints.append(k_symm_points[ns] + i*(k_symm_points[ns + 1] - k_symm_points[ns])/n_k_segments)
+                kpoints.append(k_symm_points[ns] + i * (k_symm_points[ns + 1] - k_symm_points[ns]) / n_k_segments)
         return n_kpoints
 
     def parse_bandstructure(self, sec_scc):
@@ -186,26 +205,25 @@ class Wannier90Parser:
         sec_k_band.energy_fermi = energy_fermi
 
         data = np.transpose(self.band_dat_parser.data)
+
         n_kpoints = self.get_k_points()
-        n_bands = round((len(data[0]))/n_kpoints)
+        n_bands = round((len(data[0])) / n_kpoints)
         for nb in range(n_bands):
             sec_k_band_segment = sec_k_band.m_create(BandEnergies)
             sec_k_band_segment.n_kpoints = n_kpoints
             # TODO define k_segments from self.get_k_points()
             sec_k_band_segment.kpoints = data[0]
-            sec_k_band_segment.energies = [data[1][i] for i in list(range(nb*n_kpoints, (nb+1)*n_kpoints))]
+            energies = [data[1][i] for i in list(range(nb * n_kpoints, (nb + 1) * n_kpoints))]
+            sec_k_band_segment.energies = energies * ureg.eV - energy_fermi
 
     def parse_scc(self):
         sec_run = self.archive.run[-1]
         sec_scc = sec_run.m_create(Calculation)
 
-        # Hopping matrices
-        #sec_calc.hopping_matrix = ...
-
         # TODO extract Fermi level from output?
         win_files = [f for f in os.listdir(self.maindir) if f.endswith('.win')]
         self.win_parser.mainfile = os.path.join(self.maindir, win_files[0])
-        energy_fermi = self.win_parser.get('energy_fermi', None)*ureg.eV
+        energy_fermi = self.win_parser.get('energy_fermi', None) * ureg.eV
         sec_scc.energy = Energy(fermi=energy_fermi)
 
         # Wannier band structure
@@ -234,5 +252,8 @@ class Wannier90Parser:
 
         # Method section
         self.parse_method()
+
+        # Hoppings section
+        self.parse_hoppings()
 
         self.parse_scc()

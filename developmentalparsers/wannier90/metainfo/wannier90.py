@@ -90,26 +90,41 @@ class Method(simulation.method.Method):
     projection = SubSection(sub_section=Projections.m_def, repeats=False)
 
 
-class Calculation(simulation.calculation.Calculation):
+class x_wannier90_hopping_parameters(MSection):
     '''
-    Every calculation section contains the values computed
-    during a *single configuration calculation*, i.e. a calculation performed on a given
-    configuration of the system (as defined in section_system) and a given computational
-    method (e.g., exchange-correlation method, basis sets, as defined in section_method).
-
-    The link between the current section calculation and the related
-    system and method sections is established by the values stored in system_ref and
-    method_ref, respectively.
-
-    The reason why information on the system configuration and computational method is
-    stored separately is that several *single configuration calculations* can be performed
-    on the same system configuration, viz. several system configurations can be evaluated
-    with the same computational method. This storage strategy avoids redundancies.
+    Section containing the Wannier90 hopping parameters
     '''
 
-    m_def = Section(validate=False, extends_base_section=True)
+    m_def = Section(validate=False)
+
+    nrpts = Quantity(
+        type=np.dtype(np.int32),
+        description='''
+        Number of Wigner-Seitz real points.
+        ''')
+
+    degeneracy_factors = Quantity(
+        type=np.dtype(np.int32),
+        shape=['nrpts'],
+        description='''
+        Degeneracy of each Wigner-Seitz grid point.
+        ''')
+
+    hopping_matrix = Quantity(
+        type=np.dtype(np.float64),
+        shape=['nrpts', 7],
+        description='''
+        Real space hopping matrix for each Wigner-Seitz grid point. The elements are
+        defined as follows:
+            n_x   n_y   n_z   orb_1   orb_2   real_part   imag_part
+        where (n_x, n_y, n_z) define the Wigner-Seitz cell vector in fractional coordinates,
+        (orb_1, orb_2) indicates the hopping amplitude between orb_1 and orb_2, and the
+        real and imaginary parts of the hopping in electron_volt.
+        ''')
 
 
 class Run(simulation.run.Run):
 
     m_def = Section(validate=False, extends_base_section=True)
+
+    x_wannier90_hoppings = SubSection(sub_section=x_wannier90_hopping_parameters, repeats=False)
