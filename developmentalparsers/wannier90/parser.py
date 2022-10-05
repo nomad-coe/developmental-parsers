@@ -31,7 +31,7 @@ from nomad.datamodel.metainfo.simulation.calculation import (
     Forces, ForcesEntry, ScfIteration, BandGap
 )
 from nomad.datamodel.metainfo.simulation.method import Method, KMesh, Projections
-from nomad.datamodel.metainfo.simulation.system import System
+from nomad.datamodel.metainfo.simulation.system import System, Atoms
 from .metainfo.wannier90 import x_wannier90_hopping_parameters
 
 re_n = r'[\n\r]'
@@ -57,9 +57,27 @@ class WOutParser(TextParser):
                 'inner', r'\|\s*Inner:\s*([-\d.]+)\s*\w*\s*([-\d.]+)\s*\((?P<__unit>\w+)\)',
                 dtype=float, repeats=False)]
 
+        structure_quantities = [
+            Quantity(
+                'labels', r'\|\s*([A-Z][a-z]*)', repeats=True),
+            Quantity(
+                'positions', rf'\|\s*([\-\d\.]+)\s*([\-\d\.]+)\s*([\-\d\.]+)', repeats=True)]
+
         self._quantities = [
+            # Program quantities
             Quantity(
                 Program.version, r'\s*\|\s*Release\:\s*([\d\.]+)\s*', repeats=False),
+            # System quantities
+            Quantity(
+                'lattice_vectors', r'\s*a_\d\s*([\d\-\s\.]+)',
+                repeats=True),
+            Quantity(
+                'reciprocal_lattice_vectors', r'\s*b_\d\s*([\d\-\s\.]+)',
+                repeats=True),
+            Quantity(
+                'structure', rf'(\s*Fractional Coordinate[\s\S]+?)(?:{re_n}\s*PROJECTIONS)',
+                repeats=False, sub_parser=TextParser(quantities=structure_quantities)),
+            # Method quantities
             Quantity(
                 'k_mesh', rf'\s*(K-POINT GRID[\s\S]+?)(?:-\s*MAIN)', repeats=False,
                 sub_parser=TextParser(quantities=kmesh_quantities)),
@@ -79,9 +97,6 @@ class WOutParser(TextParser):
                 'energy_windows', rf'(\|\s*Energy\s*Windows\s*\|[\s\S]+?)(?:Number of target bands to extract:)',
                 repeats=False, sub_parser=TextParser(quantities=disentangle_quantities)),
             # Band related quantities
-            Quantity(
-                'reciprocal_lattice_vectors', r'\s*b_\d\s*([\d\-\s\.]+)',
-                repeats=True),
             Quantity(
                 'n_k_segments', r'\|\s*Number of K-path sections\s*\:\s*(\d+)',
                 repeats=False),
@@ -128,6 +143,22 @@ class Wannier90Parser:
             'conv_tol': 'convergence_tolerance_ml'
         }
 
+    def parse_system(self):
+        sec_run = self.archive.run[-1]
+        sec_system = sec_run.m_create(System)
+
+        sec_atoms = sec_system.m_create(Atoms)
+        if self.wout_parser.get('lattice_vectors') is not None:
+            sec_atoms.lattice_vectors = np.vstack(self.wout_parser.get('lattice_vectors')) * ureg.angstrom
+        if self.wout_parser.get('reciprocal_lattice_vectors') is not None:
+            sec_atoms.lattice_vectors_reciprocal = np.vstack(self.wout_parser.get('reciprocal_lattice_vectors')) / ureg.angstrom
+
+        pbc = [np.vstack(self.wout_parser.get('lattice_vectors')) is not None] * 3
+        sec_atoms.periodic = pbc
+
+        sec_atoms.labels = self.wout_parser.get('structure').get('labels')
+        sec_atoms.positions = self.wout_parser.get('structure').get('positions') * ureg.angstrom
+
     def parse_method(self):
         sec_run = self.archive.run[-1]
         sec_method = sec_run.m_create(Method)
@@ -163,28 +194,37 @@ class Wannier90Parser:
 
     def get_k_points(self):
         reciprocal_lattice_vectors = np.vstack(self.wout_parser.get('reciprocal_lattice_vectors'))
+        if reciprocal_lattice_vectors is None:
+            return
 
         n_k_segments = self.wout_parser.get('n_k_segments')
         k_symm_points = []
+        k_symm_points_cart = []
         for ns in range(n_k_segments):
-            k_segments = np.split(self.wout_parser.get('band_segments_points')[ns], 2)[0]
-            k_symm_points.append(np.dot(k_segments, reciprocal_lattice_vectors))
-            # append last k point
-            if ns == (n_k_segments - 1):
-                k_segments = np.split(self.wout_parser.get('band_segments_points')[ns], 2)[1]
-                k_symm_points.append(np.dot(k_segments, reciprocal_lattice_vectors))
+            k_segments = np.split(self.wout_parser.get('band_segments_points')[ns], 2)
+            [k_symm_points_cart.append(np.dot(k_segments[i], reciprocal_lattice_vectors)) for i in range(2)]
+            [k_symm_points.append(k_segments[i]) for i in range(2)]
 
-        n_k_segments_1 = self.wout_parser.get('div_first_k_segment')
-        delta_k = np.linalg.norm(k_symm_points[1] - k_symm_points[0]) / n_k_segments_1
-        n_kpoints = 1
+        n_k_segments_points_1 = self.wout_parser.get('div_first_k_segment')
+        delta_k = np.linalg.norm(k_symm_points_cart[1] - k_symm_points_cart[0]) / n_k_segments_points_1
+        band_segments_points = []
+        for ns in range(n_k_segments):
+            n_k_segments_points = round(np.linalg.norm(k_symm_points_cart[2 * ns + 1] - k_symm_points_cart[2 * ns]) / delta_k)
+            band_segments_points.append(n_k_segments_points)
+
         kpoints = []
-        for ns in range(self.wout_parser.get('n_k_segments')):
-            n_k_segments = round(np.linalg.norm(k_symm_points[ns + 1] - k_symm_points[ns]) / delta_k)
-            n_kpoints += n_k_segments
+        for n in range(len(band_segments_points)):
+            kpoints_segment = [
+                k_symm_points[2 * n] + i * (k_symm_points[2 * n + 1] - k_symm_points[2 * n]) / band_segments_points[n]
+                for i in range(band_segments_points[n])]
+            kpoints.append(kpoints_segment)
 
-            for i in range(n_k_segments):
-                kpoints.append(k_symm_points[ns] + i * (k_symm_points[ns + 1] - k_symm_points[ns]) / n_k_segments)
-        return n_kpoints
+        # TODO check having to add manually last point (?)
+        band_segments_points[-1] = band_segments_points[-1] + 1
+        kpoints[3].append(k_symm_points[-1])
+        n_kpoints = sum(band_segments_points)
+
+        return (n_kpoints, band_segments_points, kpoints)
 
     def parse_bandstructure(self, sec_scc):
         energy_fermi = sec_scc.energy.fermi
@@ -194,10 +234,8 @@ class Wannier90Parser:
         band_files = [f for f in os.listdir(self.maindir) if f.endswith('_band.dat')]
         if not band_files:
             return
-
         if len(band_files) > 1:
             self.logger.warn('Multiple bandstructure data files found.')
-
         # Parsing only first *_band.dat file
         self.band_dat_parser.mainfile = os.path.join(self.maindir, band_files[0])
 
@@ -206,26 +244,47 @@ class Wannier90Parser:
 
         data = np.transpose(self.band_dat_parser.data)
 
-        n_kpoints = self.get_k_points()
+        (n_kpoints, band_segments_points, kpoints) = self.get_k_points()
+        n_segments = len(band_segments_points)
         n_bands = round((len(data[0])) / n_kpoints)
-        for nb in range(n_bands):
+        n_spin = 1
+
+        energy_fermi_eV = energy_fermi.to('electron_volt').magnitude
+        j = 0
+        for n in range(n_segments):
             sec_k_band_segment = sec_k_band.m_create(BandEnergies)
-            sec_k_band_segment.n_kpoints = n_kpoints
-            # TODO define k_segments from self.get_k_points()
-            sec_k_band_segment.kpoints = data[0]
-            energies = [data[1][i] for i in list(range(nb * n_kpoints, (nb + 1) * n_kpoints))]
-            sec_k_band_segment.energies = energies * ureg.eV - energy_fermi
+            sec_k_band_segment.n_kpoints = band_segments_points[n]
+            sec_k_band_segment.kpoints = kpoints[n]
+
+            energies = [[[
+                data[1][i + s * b * n_kpoints] for b in range(n_bands)]
+                for i in range(j, j + band_segments_points[n])]
+                for s in range(n_spin)]
+            occs = [[[
+                2.0 if data[1][i + s * b * n_kpoints] < energy_fermi_eV else 0.0
+                for b in range(n_bands)] for i in range(j, j + band_segments_points[n])]
+                for s in range(n_spin)]
+            j += band_segments_points[n]
+            sec_k_band_segment.energies = energies * ureg.eV
+            sec_k_band_segment.occupations = occs
 
     def parse_scc(self):
         sec_run = self.archive.run[-1]
         sec_scc = sec_run.m_create(Calculation)
+
+        # Refs for calculation
+        sec_scc.method_ref = sec_run.method[-1]
+        sec_scc.system_ref = sec_run.system[-1]
 
         # TODO extract Fermi level from output?
         win_files = [f for f in os.listdir(self.maindir) if f.endswith('.win')]
         if win_files:
             self.win_parser.mainfile = os.path.join(self.maindir, win_files[0])
             energy_fermi = self.win_parser.get('energy_fermi', None) * ureg.eV
-            sec_scc.energy = Energy(fermi=energy_fermi)
+            sec_scc_energy = sec_scc.m_create(Energy)
+            sec_scc_energy.fermi = energy_fermi
+            # Define highest_occupied as energy_fermi to correctly plot via .js
+            sec_scc_energy.highest_occupied = energy_fermi
 
         # Wannier band structure
         self.parse_bandstructure(sec_scc)
@@ -254,7 +313,8 @@ class Wannier90Parser:
             name='Wannier90', version=self.wout_parser.get('version', ''))
         # TODO TimeRun section
 
-        # Method section
+        self.parse_system()
+
         self.parse_method()
 
         self.parse_scc()

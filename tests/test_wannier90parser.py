@@ -49,10 +49,10 @@ def test_bands(parser):
 
     sec_scc = archive.run[0].calculation
     assert len(sec_scc) == 1
-    assert len(sec_scc[0].band_structure_electronic[0].segment) == 1
-    assert sec_scc[0].band_structure_electronic[0].segment[0].n_kpoints == 371
+    assert len(sec_scc[0].band_structure_electronic[0].segment) == 4
+    assert sec_scc[0].band_structure_electronic[0].segment[0].n_kpoints == 100
     assert sec_scc[0].band_structure_electronic[0].segment[0].n_kpoints == \
-        len(sec_scc[0].band_structure_electronic[0].segment[0].energies)
+        len(sec_scc[0].band_structure_electronic[0].segment[0].energies[0])
     assert sec_scc[0].energy.fermi == sec_scc[0].band_structure_electronic[0].energy_fermi
     assert sec_scc[0].band_structure_electronic[0].energy_fermi.to(ureg.electron_volt).magnitude == 11.375
 
