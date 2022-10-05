@@ -36,11 +36,11 @@ def test_hoppings(parser):
     archive = EntryArchive()
     parser.parse('tests/data/wannier90/lco_mlwf/lco.wout', archive, None)
 
-    sec_wannier = archive.run[0].x_wannier90_hoppings
-    assert sec_wannier.nrpts == 397
-    assert sec_wannier.nrpts == len(sec_wannier.degeneracy_factors)
-    assert sec_wannier.hopping_matrix.shape[0] == sec_wannier.nrpts
-    assert sec_wannier.hopping_matrix.shape[1] == 7
+    sec_hoppings = archive.run[0].calculation[0].x_wannier90_hoppings
+    assert sec_hoppings.nrpts == 397
+    assert sec_hoppings.nrpts == len(sec_hoppings.degeneracy_factors)
+    assert sec_hoppings.hopping_matrix.shape[0] == sec_hoppings.nrpts
+    assert sec_hoppings.hopping_matrix.shape[1] == 7
 
 
 def test_bands(parser):

@@ -123,7 +123,7 @@ class x_wannier90_hopping_parameters(MSection):
         ''')
 
 
-class Run(simulation.run.Run):
+class Calculation(simulation.run.Calculation):
 
     m_def = Section(validate=False, extends_base_section=True)
 

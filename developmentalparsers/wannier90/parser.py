@@ -23,6 +23,7 @@ import numpy as np
 
 from nomad.units import ureg
 
+import nomad.config
 from nomad.parsing.file_parser import TextParser, Quantity, DataTextParser
 from nomad.datamodel.metainfo.simulation.run import Run, Program
 from nomad.datamodel.metainfo.simulation.calculation import (
@@ -114,6 +115,9 @@ class HrParser(TextParser):
 
 
 class Wannier90Parser:
+    # level defined w.r.t. DFT calculation (default, level = 0)
+    level = 1
+
     def __init__(self):
         self.wout_parser = WOutParser()
         self.win_parser = WInParser()
@@ -146,15 +150,13 @@ class Wannier90Parser:
         sec_proj.outer_energy_window = self.wout_parser.get('energy_windows').outer
         sec_proj.inner_energy_window = self.wout_parser.get('energy_windows').inner
 
-    def parse_hoppings(self):
-        sec_run = self.archive.run[-1]
-
+    def parse_hoppings(self, sec_scc):
         hr_files = [f for f in os.listdir(self.maindir) if f.endswith('_hr.dat')]
         if not hr_files:
             return
 
         self.hr_parser.mainfile = os.path.join(self.maindir, hr_files[0])
-        sec_wannier = sec_run.m_create(x_wannier90_hopping_parameters)
+        sec_wannier = sec_scc.m_create(x_wannier90_hopping_parameters)
 
         sec_wannier.nrpts = self.hr_parser.get('degeneracy_factors')[1]
         sec_wannier.degeneracy_factors = self.hr_parser.get('degeneracy_factors')[2:]
@@ -229,6 +231,9 @@ class Wannier90Parser:
         # Wannier band structure
         self.parse_bandstructure(sec_scc)
 
+        # Wannier90 hoppings section
+        self.parse_hoppings(sec_scc)
+
     def parse(self, filepath, archive, logger):
         self.filepath = filepath
         self.archive = archive
@@ -252,8 +257,5 @@ class Wannier90Parser:
 
         # Method section
         self.parse_method()
-
-        # Hoppings section
-        self.parse_hoppings()
 
         self.parse_scc()
