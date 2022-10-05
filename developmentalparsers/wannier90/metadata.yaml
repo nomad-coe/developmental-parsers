@@ -2,7 +2,7 @@ codeLabel: Wannier90
 codeLabelStyle: First letter in capitals, rest in lower case
 codeName: wannier90
 codeCategory: Atomistic code
-status: developmental
+status: production
 codeUrl: http://www.wannier.org/
 parserDirName: dependencies/parsers/developmental/developmentalparsers/wannier90/
 parserGitUrl: https://github.com/nomad-coe/developmental-parsers.git

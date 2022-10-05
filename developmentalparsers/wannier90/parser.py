@@ -23,21 +23,16 @@ import numpy as np
 
 from nomad.units import ureg
 
-<<<<<<< HEAD
-=======
 import nomad.config
->>>>>>> wannier90
 from nomad.parsing.file_parser import TextParser, Quantity, DataTextParser
 from nomad.datamodel.metainfo.simulation.run import Run, Program
 from nomad.datamodel.metainfo.simulation.calculation import (
     Calculation, Dos, DosValues, BandStructure, BandEnergies, Energy, EnergyEntry, Charges,
     Forces, ForcesEntry, ScfIteration, BandGap
 )
-from nomad.datamodel.metainfo.simulation.method import Method, KMesh
+from nomad.datamodel.metainfo.simulation.method import Method, KMesh, Projections
 from nomad.datamodel.metainfo.simulation.system import System
-from .metainfo.wannier90 import (
-    Projections, x_wannier90_hopping_parameters
-)
+from .metainfo.wannier90 import x_wannier90_hopping_parameters
 
 re_n = r'[\n\r]'
 
@@ -118,12 +113,9 @@ class HrParser(TextParser):
 
 
 class Wannier90Parser:
-<<<<<<< HEAD
-=======
     # level defined w.r.t. DFT calculation (default, level = 0)
     level = 1
 
->>>>>>> wannier90
     def __init__(self):
         self.wout_parser = WOutParser()
         self.win_parser = WInParser()
@@ -230,9 +222,10 @@ class Wannier90Parser:
 
         # TODO extract Fermi level from output?
         win_files = [f for f in os.listdir(self.maindir) if f.endswith('.win')]
-        self.win_parser.mainfile = os.path.join(self.maindir, win_files[0])
-        energy_fermi = self.win_parser.get('energy_fermi', None) * ureg.eV
-        sec_scc.energy = Energy(fermi=energy_fermi)
+        if win_files:
+            self.win_parser.mainfile = os.path.join(self.maindir, win_files[0])
+            energy_fermi = self.win_parser.get('energy_fermi', None) * ureg.eV
+            sec_scc.energy = Energy(fermi=energy_fermi)
 
         # Wannier band structure
         self.parse_bandstructure(sec_scc)

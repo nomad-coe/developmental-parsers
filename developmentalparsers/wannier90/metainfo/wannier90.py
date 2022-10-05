@@ -29,67 +29,6 @@ from nomad.datamodel.metainfo.simulation.method import KMesh
 m_package = Package()
 
 
-class Projections(MSection):
-    '''
-    Section containing the various parameters that define a Wannier90 projection
-    '''
-
-    m_def = Section(validate=False)
-
-    k_mesh = SubSection(sub_section=KMesh.m_def, repeats=False)
-
-    number_of_projected_orbitals = Quantity(
-        type=np.dtype(np.int32),
-        description='''
-        Number of Wannier orbitals used to fit the DFT band structure
-        ''')
-
-    number_of_bands = Quantity(
-        type=np.dtype(np.int32),
-        description='''
-        Number of input Bloch bands.
-        ''')
-
-    is_maximally_localise = Quantity(
-        type=bool,
-        description='''
-        Are the projected orbitals maximally localized or just a single-shot projection?
-        ''')
-
-    convergence_tolerance_ml = Quantity(
-        type=np.dtype(np.float64),
-        description='''
-        Convergence tolerance for maximal localization of the projected orbitals.
-        ''')
-
-    outer_energy_window = Quantity(
-        type=np.dtype(np.float64),
-        unit='electron_volt',
-        shape=[2],
-        description='''
-        Bottom and top of the outer energy window used for the projection.
-        ''')
-
-    inner_energy_window = Quantity(
-        type=np.dtype(np.float64),
-        unit='electron_volt',
-        shape=[2],
-        description='''
-        Bottom and top of the inner energy window used for the projection.
-        ''')
-
-
-class Method(simulation.method.Method):
-    '''
-    Section containing the various parameters that define the theory and the
-    approximations (convergence, thresholds, etc.) behind the calculation.
-    '''
-
-    m_def = Section(validate=False, extends_base_section=True)
-
-    projection = SubSection(sub_section=Projections.m_def, repeats=False)
-
-
 class x_wannier90_hopping_parameters(MSection):
     '''
     Section containing the Wannier90 hopping parameters
