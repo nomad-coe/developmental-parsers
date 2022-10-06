@@ -9,4 +9,6 @@ calculations (remember that you can provide more files if you want):
 | --- | --- |
 | `*.wout` | output text file w/ arbitrary name |
 | `*.win` | input text file |
-| `*_hr.dat` | hopping matrices (written if write_hr *.win is true) |
+| `*band.dat` | band structure file |
+| `*dos.dat` | dos file |
+| `*hr.dat` | hopping matrices (written if write_hr *.win is true) |

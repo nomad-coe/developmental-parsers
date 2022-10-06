@@ -135,6 +135,7 @@ class Wannier90Parser:
         self.wout_parser = WOutParser()
         self.win_parser = WInParser()
         self.band_dat_parser = DataTextParser()
+        self.dos_dat_parser = DataTextParser()
         self.hr_parser = HrParser()
 
         self._input_projection_mapping = {
@@ -180,7 +181,7 @@ class Wannier90Parser:
         sec_proj.inner_energy_window = self.wout_parser.get('energy_windows').inner
 
     def parse_hoppings(self, sec_scc):
-        hr_files = [f for f in os.listdir(self.maindir) if f.endswith('_hr.dat')]
+        hr_files = [f for f in os.listdir(self.maindir) if f.endswith('hr.dat')]
         if not hr_files:
             return
 
@@ -230,8 +231,9 @@ class Wannier90Parser:
         energy_fermi = sec_scc.energy.fermi
         if energy_fermi is None:
             return
+        energy_fermi_eV = energy_fermi.to('electron_volt').magnitude
 
-        band_files = [f for f in os.listdir(self.maindir) if f.endswith('_band.dat')]
+        band_files = [f for f in os.listdir(self.maindir) if f.endswith('band.dat')]
         if not band_files:
             return
         if len(band_files) > 1:
@@ -249,7 +251,6 @@ class Wannier90Parser:
         n_bands = round((len(data[0])) / n_kpoints)
         n_spin = 1
 
-        energy_fermi_eV = energy_fermi.to('electron_volt').magnitude
         j = 0
         for n in range(n_segments):
             sec_k_band_segment = sec_k_band.m_create(BandEnergies)
@@ -267,6 +268,30 @@ class Wannier90Parser:
             j += band_segments_points[n]
             sec_k_band_segment.energies = energies * ureg.eV
             sec_k_band_segment.occupations = occs
+
+    def parse_dos(self, sec_scc):
+        energy_fermi = sec_scc.energy.fermi
+        if energy_fermi is None:
+            return
+
+        dos_files = [f for f in os.listdir(self.maindir) if f.endswith('dos.dat')]
+        if not dos_files:
+            return
+        if len(dos_files) > 1:
+            self.logger.warn('Multiple dos data files found.')
+        # Parsing only first *_band.dat file
+        self.dos_dat_parser.mainfile = os.path.join(self.maindir, dos_files[0])
+
+        sec_dos = sec_scc.m_create(Dos, Calculation.dos_electronic)
+        sec_dos.energy_fermi = energy_fermi
+        sec_dos.energy_shift = energy_fermi
+
+        data = np.transpose(self.dos_dat_parser.data)
+        sec_dos.n_energies = len(data[0])
+        sec_dos.energies = data[0] * ureg.eV
+
+        sec_dos_values = sec_dos.m_create(DosValues, Dos.total)
+        sec_dos_values.value = data[1] / ureg.eV
 
     def parse_scc(self):
         sec_run = self.archive.run[-1]
@@ -288,6 +313,9 @@ class Wannier90Parser:
 
         # Wannier band structure
         self.parse_bandstructure(sec_scc)
+
+        # Wannier DOS
+        self.parse_dos(sec_scc)
 
         # Wannier90 hoppings section
         self.parse_hoppings(sec_scc)

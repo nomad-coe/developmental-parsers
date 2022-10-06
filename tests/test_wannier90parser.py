@@ -54,7 +54,21 @@ def test_bands(parser):
     assert sec_scc[0].band_structure_electronic[0].segment[0].n_kpoints == \
         len(sec_scc[0].band_structure_electronic[0].segment[0].energies[0])
     assert sec_scc[0].energy.fermi == sec_scc[0].band_structure_electronic[0].energy_fermi
-    assert sec_scc[0].band_structure_electronic[0].energy_fermi.to(ureg.electron_volt).magnitude == 11.375
+    assert sec_scc[0].band_structure_electronic[0].energy_fermi.to('eV').magnitude == 11.375
+
+
+def test_dos(parser):
+    archive = EntryArchive()
+    parser.parse('tests/data/wannier90/lco_mlwf/lco.wout', archive, None)
+
+    sec_scc = archive.run[0].calculation
+    assert len(sec_scc) == 1
+    sec_dos = sec_scc[0].dos_electronic
+    assert len(sec_dos) == 1
+    assert sec_dos[0].n_energies == 692
+    assert sec_dos[0].n_energies == len(sec_dos[0].energies)
+    assert sec_dos[0].energy_shift == sec_dos[0].energy_fermi
+    assert len(sec_dos[0].total[0].value) == sec_dos[0].n_energies
 
 
 def test_projection_metainfo(parser):
