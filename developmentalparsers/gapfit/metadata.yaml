@@ -1,0 +1,11 @@
+codeLabel: gapfit
+codeLabelStyle: 'Capitals:'
+codeName: gapfit
+codeCategory: Database manager
+status: production
+codeUrl: https://libatoms.github.io/GAP/gap_fit.html
+parserDirName: dependencies/parsers/developmental/developmentalparsers/gapfit/
+parserGitUrl: https://github.com/nomad-coe/developmental-parsers.git
+parserSpecific: ''
+preamble: ''
+tableOfFiles: ''

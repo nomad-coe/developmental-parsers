@@ -16,7 +16,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import sys
+import json
+import logging
 
-from .alf import ALFParser
-from .w2dynamics import W2DynamicsParser
-from .gapfit import GAPFitParser
+from nomad.utils import configure_logging
+from nomad.datamodel import EntryArchive
+from developmentalparsers.gapfit import GAPFitParser
+
+if __name__ == "__main__":
+    configure_logging(console_log_level=logging.DEBUG)
+    archive = EntryArchive()
+    GAPFitParser().parse(sys.argv[1], archive, logging)
+    json.dump(archive.m_to_dict(), sys.stdout, indent=2)

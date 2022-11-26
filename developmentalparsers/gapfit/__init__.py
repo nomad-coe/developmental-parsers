@@ -16,7 +16,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-from .alf import ALFParser
-from .w2dynamics import W2DynamicsParser
-from .gapfit import GAPFitParser
+from .parser import GAPFitParser
