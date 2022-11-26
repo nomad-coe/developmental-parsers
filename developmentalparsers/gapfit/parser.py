@@ -19,7 +19,6 @@
 
 import logging
 import numpy as np
-from io import StringIO
 
 from nomad.units import ureg
 from nomad.parsing.file_parser import TextParser, Quantity
@@ -31,62 +30,6 @@ from developmentalparsers.gapfit.metainfo.gapfit import (
     x_gapfit_sparsex)
 
 import xml.etree.ElementTree as ET
-
-
-class ArchiveWriter:
-    def __init__(self, archive) -> None:
-        self.archive = archive
-        self.archive.run.append(Run(program=Program(name='gapfit')))
-        self._run = self.archive.run[0]
-        self._params = None
-        self._data = None
-        self._gp_sparse = None
-        self._section = None
-
-    def start(self, tag, attrib):
-        if tag == 'Potential':
-            self._params = self._run.m_create(x_gapfit_gap_params)
-            self._params.x_gapfit_label = attrib.get('label')
-            self._params.x_gapfit_init_args = attrib.get('init_args')
-        elif tag == 'GAP_params':
-            self._params = self._params if self._params else self._run.m_create(x_gapfit_gap_params)
-            self._params.x_gapfit_gap_version = attrib.get('gap_version')
-        elif tag == 'GAP_data':
-            self._data = self._params.m_create(x_gapfit_gap_data)
-            self._data.do_core = attrib.get('do_core', '').lower().startswith('t')
-        elif tag == 'e0':
-            sec_e0 = self._data.m_create(x_gapfit_e0)
-            sec_e0.x_gapfit_Z = int(attrib.get('Z', 0))
-            sec_e0.x_gapfit_value = float(attrib.get('value', 0))
-        elif tag == 'gpSparse':
-            self._gp_sparse = self._params.m_create(x_gapfit_gpsparse)
-            self._gp_sparse.x_gapfit_label = attrib.get('label')
-            self._gp_sparse.x_gapfit_n_coordinate = int(attrib.get('n_coordinate', 0))
-            self._gp_sparse.x_gapfit_fitted = attrib.get('fitted', '').lower().startswith('T')
-        elif tag == 'gpCoordinates':
-            self._gp_coordinates = self._gp_sparse.m_create(x_gapfit_gp_coordinates)
-            self._gp_coordinates.x_gapfit_label = attrib.get('label')
-            self._gp_coordinates.x_gapfit_dimensions = int(attrib.get('dimensions', 0))
-            self._gp_coordinates.x_gapfit_signal_variance = float(attrib.get('signal_variance', 0))
-            self._gp_coordinates.x_gapfit_signal_mean = float(attrib.get('signal_mean', 0))
-            self._gp_coordinates.x_gapfit_sparsified = attrib.get('sparsified', '').lower().startswith('T')
-            self._gp_coordinates.x_gapfit_n_permutations = int(attrib.get('n_permutations', 0))
-            self._gp_coordinates.x_gapfit_covariance_type = int(attrib.get('covariance_type', 0))
-            self._gp_coordinates.x_gapfit_n_sparseX = int(attrib.get('n_sparseX', 0))
-            self._gp_coordinates.x_gapfit_sparseX_filename = attrib.get('sparseX_filename')
-            self._gp_coordinates.x_gapfit_sparseX_md5sum = attrib.get('sparseX_md5sum')
-
-    def end(self, tag):
-        if tag == 'theta':
-            self._section = [self._gp_coordinates, 'x_gapfit_theta']
-        elif tag == 'descriptor':
-            self._section = [self._gp_coordinates, 'x_gapfit_descriptor']
-
-    def data(self, data):
-        if self._section:
-            # setattr(self._section[0], self._section[1], data)
-            self._section = None
-
 
 re_f = r'[-+]?\d+\.\d*(?:[Ee][-+]\d+)?'
 
@@ -123,11 +66,7 @@ class GAPFitParser:
         sec_current = None
 
         logger = logger if logger is not None else logging.getLogger(__name__)
-        # writer = ArchiveWriter(archive)
-        # parser = ET.XMLParser(target=writer)
-        # parser = ET.XMLPullParser()
-        # with open(filepath, 'r') as f:
-        #     parser.feed(f.read())
+
         for event, elem in ET.iterparse(filepath, events=('start', 'end')):
             if event == 'start':
                 if elem.tag == 'GAP_params':
